@@ -1,4 +1,4 @@
-import React, { useContext, createContext, useMemo } from "react";
+import React, { useContext, createContext, useMemo, useCallback } from "react";
 import { useNodesState, useEdgesState } from "reactflow";
 
 const FlowContextState = createContext();
@@ -13,13 +13,36 @@ const FlowContextProvider = ({ children }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
+  const addNewNode = useCallback(
+    (position = { x: 0, y: 0 }) => {
+      setNodes((prevNodes) => {
+        const maxId =
+          prevNodes.length > 0
+            ? Math.max(...prevNodes.map((node) => Number.parseInt(node.id)))
+            : 0;
+
+        const newStringId = (maxId + 1).toString();
+
+        const newNode = {
+          id: newStringId,
+          type: "customNode",
+          data: { label: "Node-" + newStringId },
+          position,
+        };
+
+        return [...prevNodes, newNode];
+      });
+    },
+    [setNodes]
+  );
+
   const stateValue = useMemo(
     () => ({ nodes, edges, onNodesChange, onEdgesChange }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodes, edges, onNodesChange, onEdgesChange]
   );
   const apiValue = useMemo(
-    () => ({ setNodes, setEdges }),
+    () => ({ setNodes, setEdges, addNewNode }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setNodes, setEdges]
   );

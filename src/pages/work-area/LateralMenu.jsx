@@ -4,30 +4,15 @@ import { useFlowContextApi } from "./flowContext";
 
 const LateralMenu = () => {
   // console.log("LateralMenu");
-  const { setNodes, setEdges } = useFlowContextApi();
+  const { setNodes, setEdges, addNewNode } = useFlowContextApi();
 
   useEffect(() => {
     console.log("LateralMenu useEffect");
   }, [setNodes, setEdges]);
 
-  const addNewNode = () => {
-    setNodes((prevNodes) => {
-      const maxId =
-        prevNodes.length > 0
-          ? Math.max(...prevNodes.map((node) => Number.parseInt(node.id)))
-          : 0;
-
-      const newStringId = (maxId + 1).toString();
-
-      const newNode = {
-        id: newStringId,
-        type: "customNode",
-        data: { label: "Node-" + newStringId },
-        position: { x: 0, y: 0 },
-      };
-
-      return [...prevNodes, newNode];
-    });
+  const onDragStart = (event, nodeType) => {
+    event.dataTransfer.setData("application/reactflow", nodeType);
+    event.dataTransfer.effectAllowed = "move";
   };
 
   return (
@@ -42,7 +27,7 @@ const LateralMenu = () => {
       <Stack spacing={3}>
         <Button
           variant="contained"
-          onClick={addNewNode}
+          onClick={() => addNewNode({ x: 0, y: 0 })}
           sx={{ alignSelf: "center", justifySelf: "center" }}
         >
           Add Node
@@ -53,6 +38,31 @@ const LateralMenu = () => {
         >
           Add Group
         </Button>
+
+        <Box
+          className="dndnode input"
+          onDragStart={(event) => onDragStart(event, "input")}
+          sx={{ border: "1px solid yellow" }}
+          draggable
+        >
+          Input Node
+        </Box>
+        <Box
+          className="dndnode"
+          onDragStart={(event) => onDragStart(event, "default")}
+          sx={{ border: "1px solid blue" }}
+          draggable
+        >
+          Default Node
+        </Box>
+        <Box
+          className="dndnode output"
+          onDragStart={(event) => onDragStart(event, "output")}
+          sx={{ border: "1px solid red" }}
+          draggable
+        >
+          Output Node
+        </Box>
       </Stack>
     </Box>
   );

@@ -1,5 +1,5 @@
 import "reactflow/dist/style.css";
-import { useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -17,7 +17,9 @@ const Flow = () => {
   // console.log("Flow");
 
   const { nodes, edges, onNodesChange, onEdgesChange } = useFlowContextState();
-  const { setEdges } = useFlowContextApi();
+  const { setEdges, addNewNode } = useFlowContextApi();
+  const reactFlowWrapper = useRef(null);
+  const [reactFlowInstance, setReactFlowInstance] = useState(null);
 
   const onConnect = useCallback(
     (connection) => {
@@ -39,30 +41,69 @@ const Flow = () => {
     []
   );
 
+  const onDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const type = event.dataTransfer.getData("application/reactflow");
+
+      // check if the dropped element is valid
+      if (typeof type === "undefined" || !type) {
+        return;
+      }
+
+      const position = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+
+      addNewNode(position);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reactFlowInstance]
+  );
+
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      onEdgeUpdate={onEdgeUpdate}
-      deleteKeyCode={"Delete"}
-      nodeTypes={nodeTypes}
-      defaultEdgeOptions={{
-        type: "smoothstep",
-        style: {
-          strokeWidth: 2,
-          // stroke: "#FF0072",
-        },
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
       }}
-      connectionLineType="smoothstep"
-      fitView
+      ref={reactFlowWrapper}
     >
-      <Background variant="dots" gap={12} size={1} />
-      <MiniMap nodeStrokeWidth={3} />
-      <Controls />
-    </ReactFlow>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onEdgeUpdate={onEdgeUpdate}
+        onInit={setReactFlowInstance}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        deleteKeyCode={"Delete"}
+        nodeTypes={nodeTypes}
+        defaultEdgeOptions={{
+          type: "smoothstep",
+          style: {
+            strokeWidth: 2,
+            // stroke: "#FF0072",
+          },
+        }}
+        connectionLineType="smoothstep"
+        fitView
+      >
+        <Background variant="dots" gap={12} size={1} />
+        <MiniMap nodeStrokeWidth={3} />
+        <Controls />
+      </ReactFlow>
+    </div>
   );
 };
 
