@@ -1,8 +1,9 @@
-import { Box, TextField } from "@mui/material";
+import { Box } from "@mui/material";
 import { Handle, Position } from "reactflow";
 import { useFlowContextApi } from "../flowContext";
+import ResizableInput from "./ResizableInput";
 
-const WIDTH = 200;
+const WIDTH = 150;
 
 const CustomNode = ({ id, data }) => {
   // console.log("CustomNode" + id);
@@ -27,56 +28,61 @@ const CustomNode = ({ id, data }) => {
   };
 
   return (
-    <Box
-      width={WIDTH}
-      height={WIDTH}
-      backgroundColor={"#fff"}
-      border={"1px solid #ddd"}
-      boxShadow={1}
-      borderRadius={4}
-      overflow={"hidden"}
-      display={"flex"}
-    >
+    <>
       <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-        }}
-        padding={1}
+        width={WIDTH}
+        height={WIDTH}
+        backgroundColor={"#fff"}
+        border={"1px solid #ddd"}
+        boxShadow={1}
+        borderRadius={4}
+        overflow={"hidden"}
         display={"flex"}
-        justifyContent="center"
-        alignItems="center"
+        alignItems={"center"}
+        justifyContent={"center"}
       >
-        <TextField
-          id="outlined-basic"
-          placeholder="Label"
-          variant="outlined"
+        <Box
+          sx={{
+            width: "100%",
+            height: "100%",
+          }}
+          padding={1}
+          display={"flex"}
+          justifyContent="center"
+          alignItems="center"
+        ></Box>
+
+        <Handle
+          id={"source"}
+          type={"source"}
+          position={Position.Top}
+          style={{
+            backgroundColor: "red",
+            width: 10,
+            height: 10,
+          }}
+        />
+        <Handle
+          id={"target"}
+          type={"target"}
+          position={Position.Bottom}
+          style={{
+            backgroundColor: "cyan",
+            width: 10,
+            height: 10,
+          }}
+        />
+
+        <ResizableInput
           value={data.label}
           onChange={onTextChange}
+          sx={{
+            position: "absolute",
+            bottom: -60,
+          }}
         />
       </Box>
-
-      <Handle
-        id={"source"}
-        type={"source"}
-        position={Position.Top}
-        style={{
-          backgroundColor: "red",
-          width: 10,
-          height: 10,
-        }}
-      />
-      <Handle
-        id={"target"}
-        type={"target"}
-        position={Position.Bottom}
-        style={{
-          backgroundColor: "cyan",
-          width: 10,
-          height: 10,
-        }}
-      />
-    </Box>
+    </>
   );
 };
 
