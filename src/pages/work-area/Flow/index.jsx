@@ -6,6 +6,7 @@ import ReactFlow, {
   MiniMap,
   addEdge,
   updateEdge,
+  MarkerType,
 } from "reactflow";
 import CustomNode from "./CustomNode";
 import { useFlowContextState, useFlowContextApi } from "../flowContext";
@@ -13,13 +14,21 @@ import { useFlowContextState, useFlowContextApi } from "../flowContext";
 const nodeTypes = { customNode: CustomNode };
 
 const Flow = () => {
-  console.log("Flow");
+  // console.log("Flow");
 
   const { nodes, edges, onNodesChange, onEdgesChange } = useFlowContextState();
   const { setEdges } = useFlowContextApi();
 
   const onConnect = useCallback(
-    (connection) => setEdges((eds) => addEdge(connection, eds)),
+    (connection) => {
+      if (connection.targetHandle === "target") {
+        connection.markerEnd = { type: MarkerType.ArrowClosed };
+      } else {
+        connection.markerStart = { type: MarkerType.ArrowClosed };
+      }
+
+      setEdges((eds) => addEdge(connection, eds));
+    },
     [setEdges]
   );
 
@@ -40,7 +49,13 @@ const Flow = () => {
       onEdgeUpdate={onEdgeUpdate}
       deleteKeyCode={"Delete"}
       nodeTypes={nodeTypes}
-      defaultEdgeOptions={{ type: "smoothstep" }}
+      defaultEdgeOptions={{
+        type: "smoothstep",
+        style: {
+          strokeWidth: 2,
+          // stroke: "#FF0072",
+        },
+      }}
       connectionLineType="smoothstep"
       fitView
     >

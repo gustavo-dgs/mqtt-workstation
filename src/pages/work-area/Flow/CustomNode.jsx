@@ -5,7 +5,7 @@ import { useFlowContextApi } from "../flowContext";
 const WIDTH = 200;
 
 const CustomNode = ({ id, data }) => {
-  console.log("CustomNode" + id);
+  // console.log("CustomNode" + id);
   const { setNodes } = useFlowContextApi();
 
   const onTextChange = (e) => {

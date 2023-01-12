@@ -4,7 +4,7 @@ import LateralMenu from "./LateralMenu";
 import Flow from "./Flow";
 
 const WorkArea = () => {
-  console.log("WorkArea");
+  // console.log("WorkArea");
 
   return (
     <>

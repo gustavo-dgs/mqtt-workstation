@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useFlowContextApi } from "./flowContext";
 
 const LateralMenu = () => {
-  console.log("LateralMenu");
+  // console.log("LateralMenu");
   const { setNodes, setEdges } = useFlowContextApi();
 
   useEffect(() => {
