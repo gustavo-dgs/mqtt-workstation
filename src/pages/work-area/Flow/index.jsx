@@ -8,10 +8,16 @@ import ReactFlow, {
   updateEdge,
 } from "reactflow";
 import CustomNode from "./CustomNode";
+import { useFlowContextState, useFlowContextApi } from "../flowContext";
 
 const nodeTypes = { customNode: CustomNode };
 
-const Flow = ({ nodes, edges, setEdges, onNodesChange, onEdgesChange }) => {
+const Flow = () => {
+  console.log("Flow");
+
+  const { nodes, edges, onNodesChange, onEdgesChange } = useFlowContextState();
+  const { setEdges } = useFlowContextApi();
+
   const onConnect = useCallback(
     (connection) => setEdges((eds) => addEdge(connection, eds)),
     [setEdges]
