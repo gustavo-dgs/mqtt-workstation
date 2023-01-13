@@ -119,11 +119,6 @@ const Flow = () => {
       return false;
     }
 
-    // check if the have a parent
-    // if (nodeA.parentNode) {
-    //   return false;
-    // }
-
     // check if the node hava an absolute position
     const positionAttributeA = nodeA.parentNode
       ? "positionAbsolute"
@@ -144,47 +139,63 @@ const Flow = () => {
       nodeB.type === "customGroup" &&
       nodeB.id !== nodeA.id; // this is needed, otherwise we would always find the dragged node
 
-    //Check if A is not inside a B's child
+    //If A is inside a B
     if (isInsideB) {
       //If target (nodeB) is a child of the nodeA, return false
-      if (isASon(nodeB, nodeA)) {
-        return false;
-      }
-
-      nodesArr = nodesArr.filter((node) => node.id !== nodeB.id);
-
-      for (let i = 0; i < nodesArr.length; i++) {
-        if (nodesArr[i].parentNode === nodeB.id) {
-          return !isInsideAGroup(nodeA, nodesArr[i], nodesArr);
-        }
-      }
-
-      return true;
+      return !isASon(nodeB, nodeA);
     }
 
     return false;
+  };
+
+  //Has children?
+  const hasChildren = (node, nodesArr) => {
+    if (!node) {
+      return false;
+    }
+
+    if (nodesArr.length < 2) {
+      return false;
+    }
+
+    return nodesArr.some((n) => n.parentNode === node.id);
   };
 
   //set the target group
   const onNodeDrag = (evt, node) => {
     // find a node where the center point is inside
 
-    for (const n of nodes) {
-      //Im inside my parent?
-      if (isInsideAGroup(node, n, nodes) && n.id === node.parentNode) {
+    const possibleTargets =
+      nodes.filter((n) => {
+        return isInsideAGroup(node, n, nodes);
+      }) || [];
+
+    //If there is no target, set target to outside
+    if (possibleTargets.length === 0) {
+      setTarget("outside");
+      return;
+    }
+
+    //If there is only one target
+    if (possibleTargets.length === 1) {
+      //If the target is the parent node do nothing
+      if (possibleTargets[0].id === node.parentNode) {
         setTarget("parentNode");
         return;
       }
 
-      //Im inside a new group?
-      if (isInsideAGroup(node, n, nodes) && n.id !== node.parentNode) {
+      //If the target is a new parent node, set the target
+      setTarget(possibleTargets[0]);
+      return;
+    }
+
+    //If there is more than one target, find the younger son
+    for (const n of possibleTargets) {
+      if (!hasChildren(n, nodes)) {
         setTarget(n);
         return;
       }
     }
-
-    //Im outside
-    setTarget("outside");
   };
 
   const updateChildrensLevel = (parentNode, nodesArr, copyArr) => {
