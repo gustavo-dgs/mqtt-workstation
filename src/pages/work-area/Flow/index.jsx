@@ -109,6 +109,26 @@ const Flow = () => {
     );
   };
 
+  // calculate absolute position of a node
+  const calculateAbsolutePosition = (node) => {
+    if (!node) {
+      return { x: 0, y: 0 };
+    }
+
+    if (!node.parentNode) {
+      return node.position;
+    }
+
+    const parentNode = nodes.find((n) => n.id === node.parentNode);
+
+    const parentAbsolutePosition = calculateAbsolutePosition(parentNode);
+
+    return {
+      x: parentAbsolutePosition.x + node.position.x,
+      y: parentAbsolutePosition.y + node.position.y,
+    };
+  };
+
   //check if the node is inside a group
   const isInsideAGroup = (nodeA, nodeB, nodesArr) => {
     if (!nodeA || !nodeB) {
@@ -119,23 +139,19 @@ const Flow = () => {
       return false;
     }
 
-    // check if the node hava an absolute position
-    const positionAttributeA = nodeA.parentNode
-      ? "positionAbsolute"
-      : "position";
-    const positionAttributeB = nodeB.parentNode
-      ? "positionAbsolute"
-      : "position";
+    // calculate absolute position of the nodes
+    const absolutePositionA = calculateAbsolutePosition(nodeA);
+    const absolutePositionB = calculateAbsolutePosition(nodeB);
 
     // calculate the center point of the node from position and dimensions
-    const centerX = nodeA[positionAttributeA].x + nodeA.width / 2;
-    const centerY = nodeA[positionAttributeA].y + nodeA.height / 2;
+    const centerX = absolutePositionA.x + nodeA.width / 2;
+    const centerY = absolutePositionA.y + nodeA.height / 2;
 
     const isInsideB =
-      centerX > nodeB[positionAttributeB].x &&
-      centerX < nodeB[positionAttributeB].x + nodeB.width &&
-      centerY > nodeB[positionAttributeB].y &&
-      centerY < nodeB[positionAttributeB].y + nodeB.height &&
+      centerX > absolutePositionB.x &&
+      centerX < absolutePositionB.x + nodeB.width &&
+      centerY > absolutePositionB.y &&
+      centerY < absolutePositionB.y + nodeB.height &&
       nodeB.type === "customGroup" &&
       nodeB.id !== nodeA.id; // this is needed, otherwise we would always find the dragged node
 
@@ -238,10 +254,14 @@ const Flow = () => {
 
     //If im inside a group add me to it
     if (target && typeof target === "object") {
+      // calculate absolute position of the nodes
+      const absolutePositionA = calculateAbsolutePosition(node);
+      const absolutePositionB = calculateAbsolutePosition(target);
+
       //Calculate the position of the node inside the group
       const position = {
-        x: node.position.x - target.position.x,
-        y: node.position.y - target.position.y,
+        x: absolutePositionA.x - absolutePositionB.x,
+        y: absolutePositionA.y - absolutePositionB.y,
       };
 
       //Calculate the new level of the node
