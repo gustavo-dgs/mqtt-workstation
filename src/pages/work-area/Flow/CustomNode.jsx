@@ -6,7 +6,6 @@ import ResizableInput from "./ResizableInput";
 const WIDTH = 100;
 
 const CustomNode = ({ id, data }) => {
-  // console.log("CustomNode" + id);
   const { setNodes } = useFlowContextApi();
 
   const onTextChange = (e) => {

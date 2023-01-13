@@ -1,14 +1,9 @@
 import { Box, Stack, Button } from "@mui/material";
-import { useEffect } from "react";
 import { useFlowContextApi } from "./flowContext";
 
 const LateralMenu = () => {
   // console.log("LateralMenu");
-  const { setNodes, setEdges, addNewNode, addNewGroup } = useFlowContextApi();
-
-  useEffect(() => {
-    console.log("LateralMenu useEffect");
-  }, [setNodes, setEdges]);
+  const { addNewNode, addNewGroup } = useFlowContextApi();
 
   const onDragStart = (event, nodeType) => {
     event.dataTransfer.setData("application/reactflow", nodeType);

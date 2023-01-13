@@ -25,6 +25,7 @@ const Flow = () => {
   // this ref stores the current dragged node
   const dragRef = useRef(null);
 
+  //Create new edges
   const onConnect = useCallback(
     (connection) => {
       if (connection.targetHandle === "target") {
@@ -38,6 +39,7 @@ const Flow = () => {
     [setEdges]
   );
 
+  //Update existing edges
   const onEdgeUpdate = useCallback(
     (oldEdge, newConnection) =>
       setEdges((els) => updateEdge(oldEdge, newConnection, els)),
@@ -45,6 +47,7 @@ const Flow = () => {
     []
   );
 
+  //Add a div inside the flow
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
@@ -77,21 +80,34 @@ const Flow = () => {
     dragRef.current = node;
   };
 
+  //check if the node is inside the Gruop B and B is its parent
   const isInsideItsParent = (nodeA, nodeB) => {
     // calculate the center point of the node from position and dimensions
-    const centerX = nodeA.position.x + nodeA.width / 2;
-    const centerY = nodeA.position.y + nodeA.height / 2;
+    if (!nodeA.parentNode) {
+      return false;
+    }
+
+    const centerX = nodeA.positionAbsolute.x + nodeA.width / 2;
+    const centerY = nodeA.positionAbsolute.y + nodeA.height / 2;
 
     return (
       nodeB.id === nodeA.parentNode &&
-      centerX > 0 &&
-      centerX < nodeB.width &&
-      centerY > 0 &&
-      centerY < nodeB.height
+      centerX > nodeB.position.x &&
+      centerX < nodeB.position.x + nodeB.width &&
+      centerY > nodeB.position.y &&
+      centerY < nodeB.position.y + nodeB.height &&
+      nodeB.type === "group" &&
+      nodeB.id !== nodeA.id // this is needed, otherwise we would always find the dragged node
     );
   };
 
+  //check if the node is inside a group
   const isInsideAGruop = (nodeA, nodeB) => {
+    // calculate the center point of the node from position and dimensions
+    if (nodeA.parentNode) {
+      return false;
+    }
+
     // calculate the center point of the node from position and dimensions
     const centerX = nodeA.position.x + nodeA.width / 2;
     const centerY = nodeA.position.y + nodeA.height / 2;
@@ -106,6 +122,7 @@ const Flow = () => {
     );
   };
 
+  //set the target group
   const onNodeDrag = (evt, node) => {
     // find a node where the center point is inside
 
@@ -127,104 +144,123 @@ const Flow = () => {
     setTarget("outside");
   };
 
-  // useEffect(() => {
-  //   if (!target) {
-  //     return;
-  //   }
-  //   setNodes((prevNodes) => {
-  //     const newNodes = prevNodes.map((node) => {
-  //       if (node.id === target.id) {
-  //         node.style = { ...node.style, shadow: "0 0 10px 5px #1890ff" };
-  //       } else {
-  //         node.style = { ...node.style, shadow: "none" };
-  //       }
-  //       return node;
-  //     });
-  //     return newNodes;
-  //   });
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [target]);
+  const updateChildrensLevel = (parentNode, nodesArr) => {
+    if (parentNode.type !== "group") {
+      return;
+    }
 
+    for (let i = 0; i < nodesArr.length; i++) {
+      if (nodesArr[i].parentNode === parentNode.id) {
+        nodesArr[i].data.level = parentNode.data.level + 1;
+        updateChildrensLevel(nodesArr[i], nodesArr);
+      }
+    }
+  };
+
+  //Add or remove a node from a group
   const onNodeDragStop = (evt, node) => {
-    // on drag stop, we add the node to the group
     console.log("target", target, "parent", node.parentNode);
 
-    //If im inside a group
+    //Remove hover effect from all groups
+    setNodes((prevNodes) =>
+      prevNodes.map((node) => {
+        if (node.type === "group") {
+          node.style = { ...node.style, boxShadow: "none" };
+        }
+        return node;
+      })
+    );
+
+    //If im inside a group add me to it
     if (target && typeof target === "object") {
+      //Calculate the position of the node inside the group
       const position = {
         x: node.position.x - target.position.x,
         y: node.position.y - target.position.y,
       };
 
-      setNodes((nodes) =>
-        nodes.map((n) => {
+      //Calculate the new level of the node
+      const level = target.data.level + 1;
+
+      setNodes((prevNodes) => {
+        const newNodes = prevNodes.map((n) => {
           if (n.id === node.id) {
             n.parentNode = target.id;
             n.position = position;
+            n.data = { ...n.data, level };
             // n.extent = "parent";
-
-            n.zIndex = 1000;
+            // n.zIndex = 1000;
           }
           return n;
-        })
-      );
+        });
 
-      // if im outside the parent node
+        //If node is a gruop update the level of the childrens
+        updateChildrensLevel(node, newNodes);
+
+        //Sort the nodes by level
+        newNodes.sort((a, b) => a.data.level - b.data.level);
+
+        return newNodes;
+      });
+
+      // if im outside the parent node remove me from it
     } else if (target && target === "outside" && node.parentNode) {
-      const parent = nodes.find((n) => n.id === node.parentNode);
-
       const position = {
-        x: node.position.x + parent.position.x,
-        y: node.position.y + parent.position.y,
+        x: node.positionAbsolute.x,
+        y: node.positionAbsolute.y,
       };
 
-      setNodes((nodes) =>
-        nodes.map((n) => {
+      setNodes((prevNodes) => {
+        const newNodes = prevNodes.map((n) => {
           if (n.id === node.id) {
             n.parentNode = null;
             n.position = position;
-            n.zIndex = 0;
+            n.data = { ...n.data, level: 0 };
           }
           return n;
-        })
-      );
+        });
+
+        //If node is a gruop update the level of the childrens
+        updateChildrensLevel(node, newNodes);
+
+        //Sort the nodes by level
+        newNodes.sort((a, b) => a.data.level - b.data.level);
+
+        return newNodes;
+      });
     }
 
-    // if im inside the parent node
+    // if im inside the parent node do nothing
     // if (target && target === "parentNode") nothing;
 
-    // if im outside the parent node and i dont have a parent
+    // if im outside the parent node and i dont have a parent do nothing
     // if (!target && !node.parentNode) nothing;
 
-    // if I made click inside my parent
+    // if I made click inside my parent do nothing
     // if (!target && node.parentNode) nothing;
 
     setTarget(null);
     dragRef.current = null;
   };
 
-  //  useEffect(() => {
-  //    // whenever the target changes, we swap the colors temporarily
-  //    // this is just a placeholder, implement your own logic here
-  //    setNodes((nodes) =>
-  //      nodes.map((node) => {
-  //        if (node.id === target?.id) {
-  //          node.style = {
-  //            ...node.style,
-  //            backgroundColor: dragRef.current?.data.color,
-  //          };
-  //          node.data = { ...node.data, label: dragRef.current?.data.color };
-  //        } else if (node.id === dragRef.current?.id && target) {
-  //          node.style = { ...node.style, backgroundColor: target.data.color };
-  //          node.data = { ...node.data, label: target.data.color };
-  //        } else {
-  //          node.style = { ...node.style, backgroundColor: node.data.color };
-  //          node.data = { ...node.data, label: node.data.color };
-  //        }
-  //        return node;
-  //      })
-  //    );
-  //  }, [target]);
+  //Add hover effect to the target group
+  useEffect(() => {
+    if (!target) {
+      return;
+    }
+    setNodes((prevNodes) => {
+      const newNodes = prevNodes.map((node) => {
+        if (node.id === target.id) {
+          node.style = { ...node.style, boxShadow: "0 0 30px #0ddbdb" };
+        } else {
+          node.style = { ...node.style, boxShadow: "none" };
+        }
+        return node;
+      });
+      return newNodes;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target]);
 
   return (
     <div

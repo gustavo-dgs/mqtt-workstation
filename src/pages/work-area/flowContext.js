@@ -26,7 +26,7 @@ const FlowContextProvider = ({ children }) => {
         const newNode = {
           id: newStringId,
           type: "customNode",
-          data: { label: "Node-" + newStringId },
+          data: { label: "Node-" + newStringId, level: 0 },
           position,
         };
 
@@ -49,7 +49,7 @@ const FlowContextProvider = ({ children }) => {
         const newNode = {
           id: newStringId,
           type: "group",
-          data: { label: null },
+          data: { label: null, level: 0 },
           position,
           style: {
             width: 270,
@@ -63,15 +63,39 @@ const FlowContextProvider = ({ children }) => {
     [setNodes]
   );
 
+  const removeNodeFromGroup = useCallback(
+    (nodeId) => {
+      setNodes((prevNodes) => {
+        const newNodes = prevNodes.map((node) => {
+          if (node.id === nodeId) {
+            return {
+              ...node,
+              parentNode: null,
+            };
+          }
+          return node;
+        });
+        return newNodes;
+      });
+    },
+    [setNodes]
+  );
+
   const stateValue = useMemo(
     () => ({ nodes, edges, onNodesChange, onEdgesChange }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodes, edges, onNodesChange, onEdgesChange]
   );
   const apiValue = useMemo(
-    () => ({ setNodes, setEdges, addNewNode, addNewGroup }),
+    () => ({
+      setNodes,
+      setEdges,
+      addNewNode,
+      addNewGroup,
+      removeNodeFromGroup,
+    }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setNodes, setEdges]
+    [setNodes, setEdges, addNewNode, addNewGroup, removeNodeFromGroup]
   );
 
   return (
