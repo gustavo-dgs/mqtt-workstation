@@ -1,5 +1,5 @@
 import "reactflow/dist/style.css";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -77,53 +77,77 @@ const Flow = () => {
     dragRef.current = node;
   };
 
-  const onNodeDrag = (evt, node) => {
+  const isInsideItsParent = (nodeA, nodeB) => {
     // calculate the center point of the node from position and dimensions
-    const centerX = node.position.x + node.width / 2;
-    const centerY = node.position.y + node.height / 2;
+    const centerX = nodeA.position.x + nodeA.width / 2;
+    const centerY = nodeA.position.y + nodeA.height / 2;
 
+    return (
+      nodeB.id === nodeA.parentNode &&
+      centerX > 0 &&
+      centerX < nodeB.width &&
+      centerY > 0 &&
+      centerY < nodeB.height
+    );
+  };
+
+  const isInsideAGruop = (nodeA, nodeB) => {
+    // calculate the center point of the node from position and dimensions
+    const centerX = nodeA.position.x + nodeA.width / 2;
+    const centerY = nodeA.position.y + nodeA.height / 2;
+
+    return (
+      centerX > nodeB.position.x &&
+      centerX < nodeB.position.x + nodeB.width &&
+      centerY > nodeB.position.y &&
+      centerY < nodeB.position.y + nodeB.height &&
+      nodeB.type === "group" &&
+      nodeB.id !== nodeA.id // this is needed, otherwise we would always find the dragged node
+    );
+  };
+
+  const onNodeDrag = (evt, node) => {
     // find a node where the center point is inside
-    let isMyParent = false;
 
-    const targetNode = nodes.find((n) => {
-      if (
-        centerX > n.position.x &&
-        centerX < n.position.x + n.width &&
-        centerY > n.position.y &&
-        centerY < n.position.y + n.height &&
-        n.type === "group" &&
-        n.id === node.parentNode &&
-        n.id !== node.id
-      ) {
-        isMyParent = true;
+    for (const n of nodes) {
+      //Im inside my parent?
+      if (isInsideItsParent(node, n)) {
+        setTarget("parentNode");
+        return;
       }
 
-      return (
-        centerX > n.position.x &&
-        centerX < n.position.x + n.width &&
-        centerY > n.position.y &&
-        centerY < n.position.y + n.height &&
-        n.type === "group" &&
-        n.id !== node.parentNode &&
-        n.id !== node.id
-      ); // this is needed, otherwise we would always find the dragged node
-    });
-
-    if (isMyParent) {
-      setTarget("parentNode");
+      //Im inside a new group?
+      if (isInsideAGruop(node, n) && n.id !== node.parentNode) {
+        setTarget(n);
+        return;
+      }
     }
 
-    if (targetNode) {
-      setTarget(targetNode);
-    }
-
-    if (!targetNode && !isMyParent) {
-      setTarget("outside");
-    }
+    //Im outside
+    setTarget("outside");
   };
+
+  // useEffect(() => {
+  //   if (!target) {
+  //     return;
+  //   }
+  //   setNodes((prevNodes) => {
+  //     const newNodes = prevNodes.map((node) => {
+  //       if (node.id === target.id) {
+  //         node.style = { ...node.style, shadow: "0 0 10px 5px #1890ff" };
+  //       } else {
+  //         node.style = { ...node.style, shadow: "none" };
+  //       }
+  //       return node;
+  //     });
+  //     return newNodes;
+  //   });
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [target]);
 
   const onNodeDragStop = (evt, node) => {
     // on drag stop, we add the node to the group
+    console.log("target", target, "parent", node.parentNode);
 
     //If im inside a group
     if (target && typeof target === "object") {
