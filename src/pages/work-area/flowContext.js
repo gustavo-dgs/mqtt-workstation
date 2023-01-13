@@ -14,7 +14,7 @@ const FlowContextProvider = ({ children }) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const addNewNode = useCallback(
-    (position = { x: 0, y: 0 }) => {
+    (position = { x: 0, y: 0 }, device) => {
       setNodes((prevNodes) => {
         const maxId =
           prevNodes.length > 0
@@ -26,7 +26,7 @@ const FlowContextProvider = ({ children }) => {
         const newNode = {
           id: newStringId,
           type: "customNode",
-          data: { label: "Node-" + newStringId, level: 0 },
+          data: { label: "Node-" + newStringId, level: 0, device },
           position,
         };
 

@@ -1,12 +1,12 @@
 // import { memo } from "react";
-import { Box } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { Handle, Position } from "reactflow";
 import { useFlowContextApi } from "../flowContext";
 import ResizableInput from "./ResizableInput";
 
-const WIDTH = 100;
+const WIDTH = 80;
 
-const CustomNode = ({ id, data }) => {
+const CustomNode = ({ id, data, disabled }) => {
   const { setNodes } = useFlowContextApi();
 
   const onTextChange = (e) => {
@@ -30,8 +30,8 @@ const CustomNode = ({ id, data }) => {
   return (
     <>
       <Box
-        width={WIDTH}
-        height={WIDTH}
+        width={disabled ? "100%" : WIDTH}
+        height={disabled ? "100%" : WIDTH}
         backgroundColor={"#fff"}
         border={"1px solid #ddd"}
         boxShadow={1}
@@ -41,7 +41,7 @@ const CustomNode = ({ id, data }) => {
         alignItems={"center"}
         justifyContent={"center"}
       >
-        <Box
+        <Stack
           sx={{
             width: "100%",
             height: "100%",
@@ -50,37 +50,43 @@ const CustomNode = ({ id, data }) => {
           display={"flex"}
           justifyContent="center"
           alignItems="center"
-        ></Box>
+        >
+          <Typography variant="h3">{data.device}</Typography>
+        </Stack>
 
-        <Handle
-          id={"source"}
-          type={"source"}
-          position={Position.Top}
-          style={{
-            backgroundColor: "red",
-            width: 10,
-            height: 10,
-          }}
-        />
-        <Handle
-          id={"target"}
-          type={"target"}
-          position={Position.Bottom}
-          style={{
-            backgroundColor: "cyan",
-            width: 10,
-            height: 10,
-          }}
-        />
+        {!disabled && (
+          <>
+            <Handle
+              id={"source"}
+              type={"source"}
+              position={Position.Top}
+              style={{
+                backgroundColor: "red",
+                width: 10,
+                height: 10,
+              }}
+            />
+            <Handle
+              id={"target"}
+              type={"target"}
+              position={Position.Bottom}
+              style={{
+                backgroundColor: "cyan",
+                width: 10,
+                height: 10,
+              }}
+            />
 
-        <ResizableInput
-          value={data.label}
-          onChange={onTextChange}
-          sx={{
-            position: "absolute",
-            bottom: -60,
-          }}
-        />
+            <ResizableInput
+              value={data.label}
+              onChange={onTextChange}
+              sx={{
+                position: "absolute",
+                bottom: -60,
+              }}
+            />
+          </>
+        )}
       </Box>
     </>
   );

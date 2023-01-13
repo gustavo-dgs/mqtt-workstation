@@ -65,10 +65,10 @@ const Flow = () => {
       event.preventDefault();
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const type = event.dataTransfer.getData("application/reactflow");
+      const device = event.dataTransfer.getData("application/reactflow");
 
       // check if the dropped element is valid
-      if (typeof type === "undefined" || !type) {
+      if (typeof device === "undefined" || !device) {
         return;
       }
 
@@ -77,7 +77,7 @@ const Flow = () => {
         y: event.clientY - reactFlowBounds.top,
       });
 
-      addNewNode(position);
+      addNewNode(position, device);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [reactFlowInstance]
