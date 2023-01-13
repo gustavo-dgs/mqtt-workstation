@@ -4,7 +4,7 @@ import { useFlowContextApi } from "./flowContext";
 
 const LateralMenu = () => {
   // console.log("LateralMenu");
-  const { setNodes, setEdges, addNewNode } = useFlowContextApi();
+  const { setNodes, setEdges, addNewNode, addNewGroup } = useFlowContextApi();
 
   useEffect(() => {
     console.log("LateralMenu useEffect");
@@ -33,6 +33,7 @@ const LateralMenu = () => {
           Add Node
         </Button>
         <Button
+          onClick={() => addNewGroup({ x: 0, y: 0 })}
           variant="outlined"
           sx={{ alignSelf: "center", justifySelf: "center" }}
         >

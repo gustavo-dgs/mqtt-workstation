@@ -3,7 +3,7 @@ import { Handle, Position } from "reactflow";
 import { useFlowContextApi } from "../flowContext";
 import ResizableInput from "./ResizableInput";
 
-const WIDTH = 150;
+const WIDTH = 100;
 
 const CustomNode = ({ id, data }) => {
   // console.log("CustomNode" + id);

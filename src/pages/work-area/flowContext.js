@@ -36,13 +36,40 @@ const FlowContextProvider = ({ children }) => {
     [setNodes]
   );
 
+  const addNewGroup = useCallback(
+    (position = { x: 0, y: 0 }) => {
+      setNodes((prevNodes) => {
+        const maxId =
+          prevNodes.length > 0
+            ? Math.max(...prevNodes.map((node) => Number.parseInt(node.id)))
+            : 0;
+
+        const newStringId = (maxId + 1).toString();
+
+        const newNode = {
+          id: newStringId,
+          type: "group",
+          data: { label: null },
+          position,
+          style: {
+            width: 270,
+            height: 240,
+          },
+        };
+
+        return [...prevNodes, newNode];
+      });
+    },
+    [setNodes]
+  );
+
   const stateValue = useMemo(
     () => ({ nodes, edges, onNodesChange, onEdgesChange }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodes, edges, onNodesChange, onEdgesChange]
   );
   const apiValue = useMemo(
-    () => ({ setNodes, setEdges, addNewNode }),
+    () => ({ setNodes, setEdges, addNewNode, addNewGroup }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setNodes, setEdges]
   );
