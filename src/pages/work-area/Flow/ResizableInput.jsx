@@ -4,7 +4,7 @@ import { TextField } from "@mui/material";
 const ResizableInput = ({ value, onChange, ...props }) => {
   const textSpan = useRef(null);
   const labelSpan = useRef(null);
-  const [text, setText] = useState(value);
+  const [text, setText] = useState(value || "");
 
   const onTextChange = (e) => {
     setText(e.target.value);

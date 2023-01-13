@@ -48,12 +48,12 @@ const FlowContextProvider = ({ children }) => {
 
         const newNode = {
           id: newStringId,
-          type: "group",
-          data: { label: null, level: 0 },
+          type: "customGroup",
+          data: { label: "Group-" + newStringId, level: 0 },
           position,
           style: {
-            width: 270,
-            height: 240,
+            width: 300,
+            height: 300,
           },
         };
 

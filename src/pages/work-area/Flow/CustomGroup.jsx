@@ -1,12 +1,11 @@
+import "@reactflow/node-resizer/dist/style.css";
 // import { memo } from "react";
 import { Box } from "@mui/material";
-import { Handle, Position } from "reactflow";
 import { useFlowContextApi } from "../flowContext";
 import ResizableInput from "./ResizableInput";
+import { NodeResizer } from "@reactflow/node-resizer";
 
-const WIDTH = 100;
-
-const CustomNode = ({ id, data }) => {
+const CustomGroup = ({ id, data, selected }) => {
   const { setNodes } = useFlowContextApi();
 
   const onTextChange = (e) => {
@@ -30,49 +29,16 @@ const CustomNode = ({ id, data }) => {
   return (
     <>
       <Box
-        width={WIDTH}
-        height={WIDTH}
-        backgroundColor={"#fff"}
-        border={"1px solid #ddd"}
-        boxShadow={1}
+        width={"100%"}
+        height={"100%"}
+        backgroundColor={"#0fc44579"}
+        border={"2px solid #505050"}
         borderRadius={4}
         overflow={"hidden"}
         display={"flex"}
         alignItems={"center"}
         justifyContent={"center"}
       >
-        <Box
-          sx={{
-            width: "100%",
-            height: "100%",
-          }}
-          padding={1}
-          display={"flex"}
-          justifyContent="center"
-          alignItems="center"
-        ></Box>
-
-        <Handle
-          id={"source"}
-          type={"source"}
-          position={Position.Top}
-          style={{
-            backgroundColor: "red",
-            width: 10,
-            height: 10,
-          }}
-        />
-        <Handle
-          id={"target"}
-          type={"target"}
-          position={Position.Bottom}
-          style={{
-            backgroundColor: "cyan",
-            width: 10,
-            height: 10,
-          }}
-        />
-
         <ResizableInput
           value={data.label}
           onChange={onTextChange}
@@ -82,8 +48,15 @@ const CustomNode = ({ id, data }) => {
           }}
         />
       </Box>
+      <NodeResizer
+        color="#3367D9"
+        isVisible={selected}
+        minWidth={100}
+        minHeight={30}
+        lineStyle={{ borderWidth: 1 }}
+      />
     </>
   );
 };
 
-export default CustomNode;
+export default CustomGroup;

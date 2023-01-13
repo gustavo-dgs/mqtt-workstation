@@ -9,9 +9,10 @@ import ReactFlow, {
   MarkerType,
 } from "reactflow";
 import CustomNode from "./CustomNode";
+import CustomGroup from "./CustomGroup";
 import { useFlowContextState, useFlowContextApi } from "../flowContext";
 
-const nodeTypes = { customNode: CustomNode };
+const nodeTypes = { customNode: CustomNode, customGroup: CustomGroup };
 
 const Flow = () => {
   // console.log("Flow");
@@ -96,7 +97,7 @@ const Flow = () => {
       centerX < nodeB.position.x + nodeB.width &&
       centerY > nodeB.position.y &&
       centerY < nodeB.position.y + nodeB.height &&
-      nodeB.type === "group" &&
+      nodeB.type === "customGroup" &&
       nodeB.id !== nodeA.id // this is needed, otherwise we would always find the dragged node
     );
   };
@@ -117,7 +118,7 @@ const Flow = () => {
       centerX < nodeB.position.x + nodeB.width &&
       centerY > nodeB.position.y &&
       centerY < nodeB.position.y + nodeB.height &&
-      nodeB.type === "group" &&
+      nodeB.type === "customGroup" &&
       nodeB.id !== nodeA.id // this is needed, otherwise we would always find the dragged node
     );
   };
@@ -145,7 +146,7 @@ const Flow = () => {
   };
 
   const updateChildrensLevel = (parentNode, nodesArr) => {
-    if (parentNode.type !== "group") {
+    if (parentNode.type !== "customGroup") {
       return;
     }
 
@@ -159,12 +160,12 @@ const Flow = () => {
 
   //Add or remove a node from a group
   const onNodeDragStop = (evt, node) => {
-    console.log("target", target, "parent", node.parentNode);
+    // console.log("target", target, "parent", node.parentNode);
 
     //Remove hover effect from all groups
     setNodes((prevNodes) =>
       prevNodes.map((node) => {
-        if (node.type === "group") {
+        if (node.type === "customGroup") {
           node.style = { ...node.style, boxShadow: "none" };
         }
         return node;
