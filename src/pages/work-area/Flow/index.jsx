@@ -81,46 +81,88 @@ const Flow = () => {
     dragRef.current = node;
   };
 
-  //check if the node is inside the Gruop B and B is its parent
-  const isInsideItsParent = (nodeA, nodeB) => {
-    // calculate the center point of the node from position and dimensions
+  //Is node A son of node B?
+  const isASon = (nodeA, nodeB) => {
+    if (!nodeA || !nodeB) {
+      return false;
+    }
+
+    if (nodes.length < 2) {
+      return false;
+    }
+
+    if (nodeA.id === nodeB.id) {
+      return false;
+    }
+
     if (!nodeA.parentNode) {
       return false;
     }
 
-    const centerX = nodeA.positionAbsolute.x + nodeA.width / 2;
-    const centerY = nodeA.positionAbsolute.y + nodeA.height / 2;
+    if (nodeA.parentNode === nodeB.id) {
+      return true;
+    }
 
-    return (
-      nodeB.id === nodeA.parentNode &&
-      centerX > nodeB.position.x &&
-      centerX < nodeB.position.x + nodeB.width &&
-      centerY > nodeB.position.y &&
-      centerY < nodeB.position.y + nodeB.height &&
-      nodeB.type === "customGroup" &&
-      nodeB.id !== nodeA.id // this is needed, otherwise we would always find the dragged node
+    return isASon(
+      nodes.find((n) => n.id === nodeA.parentNode),
+      nodeB
     );
   };
 
   //check if the node is inside a group
-  const isInsideAGruop = (nodeA, nodeB) => {
-    // calculate the center point of the node from position and dimensions
-    if (nodeA.parentNode) {
+  const isInsideAGroup = (nodeA, nodeB, nodesArr) => {
+    if (!nodeA || !nodeB) {
       return false;
     }
 
-    // calculate the center point of the node from position and dimensions
-    const centerX = nodeA.position.x + nodeA.width / 2;
-    const centerY = nodeA.position.y + nodeA.height / 2;
+    if (nodesArr.length < 2) {
+      return false;
+    }
 
-    return (
-      centerX > nodeB.position.x &&
-      centerX < nodeB.position.x + nodeB.width &&
-      centerY > nodeB.position.y &&
-      centerY < nodeB.position.y + nodeB.height &&
+    // check if the have a parent
+    // if (nodeA.parentNode) {
+    //   return false;
+    // }
+
+    // check if the node hava an absolute position
+    const positionAttributeA = nodeA.parentNode
+      ? "positionAbsolute"
+      : "position";
+    const positionAttributeB = nodeB.parentNode
+      ? "positionAbsolute"
+      : "position";
+
+    // calculate the center point of the node from position and dimensions
+    const centerX = nodeA[positionAttributeA].x + nodeA.width / 2;
+    const centerY = nodeA[positionAttributeA].y + nodeA.height / 2;
+
+    const isInsideB =
+      centerX > nodeB[positionAttributeB].x &&
+      centerX < nodeB[positionAttributeB].x + nodeB.width &&
+      centerY > nodeB[positionAttributeB].y &&
+      centerY < nodeB[positionAttributeB].y + nodeB.height &&
       nodeB.type === "customGroup" &&
-      nodeB.id !== nodeA.id // this is needed, otherwise we would always find the dragged node
-    );
+      nodeB.id !== nodeA.id; // this is needed, otherwise we would always find the dragged node
+
+    //Check if A is not inside a B's child
+    if (isInsideB) {
+      //If target (nodeB) is a child of the nodeA, return false
+      if (isASon(nodeB, nodeA)) {
+        return false;
+      }
+
+      nodesArr = nodesArr.filter((node) => node.id !== nodeB.id);
+
+      for (let i = 0; i < nodesArr.length; i++) {
+        if (nodesArr[i].parentNode === nodeB.id) {
+          return !isInsideAGroup(nodeA, nodesArr[i], nodesArr);
+        }
+      }
+
+      return true;
+    }
+
+    return false;
   };
 
   //set the target group
@@ -129,13 +171,13 @@ const Flow = () => {
 
     for (const n of nodes) {
       //Im inside my parent?
-      if (isInsideItsParent(node, n)) {
+      if (isInsideAGroup(node, n, nodes) && n.id === node.parentNode) {
         setTarget("parentNode");
         return;
       }
 
       //Im inside a new group?
-      if (isInsideAGruop(node, n) && n.id !== node.parentNode) {
+      if (isInsideAGroup(node, n, nodes) && n.id !== node.parentNode) {
         setTarget(n);
         return;
       }
@@ -145,22 +187,33 @@ const Flow = () => {
     setTarget("outside");
   };
 
-  const updateChildrensLevel = (parentNode, nodesArr) => {
+  const updateChildrensLevel = (parentNode, nodesArr, copyArr) => {
+    // console.log("updateChildrensLevel", parentNode.id);
     if (parentNode.type !== "customGroup") {
       return;
     }
 
-    for (let i = 0; i < nodesArr.length; i++) {
-      if (nodesArr[i].parentNode === parentNode.id) {
-        nodesArr[i].data.level = parentNode.data.level + 1;
-        updateChildrensLevel(nodesArr[i], nodesArr);
+    copyArr = copyArr || [...nodesArr];
+
+    if (copyArr.length < 2) {
+      return;
+    }
+
+    //remove parent node from copy
+    copyArr = copyArr.filter((node) => node.id !== parentNode.id);
+
+    for (let i = 0; i < copyArr.length; i++) {
+      if (copyArr[i].parentNode === parentNode.id) {
+        const index = nodesArr.findIndex((node) => node.id === copyArr[i].id);
+        nodesArr[index].data.level = parentNode.data.level + 1;
+        updateChildrensLevel(nodesArr[index], nodesArr, copyArr);
       }
     }
   };
 
   //Add or remove a node from a group
   const onNodeDragStop = (evt, node) => {
-    // console.log("target", target, "parent", node.parentNode);
+    console.log("target", target, "parent", node.parentNode);
 
     //Remove hover effect from all groups
     setNodes((prevNodes) =>
