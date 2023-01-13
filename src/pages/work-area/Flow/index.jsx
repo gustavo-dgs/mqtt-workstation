@@ -11,6 +11,12 @@ import ReactFlow, {
 import CustomNode from "./CustomNode";
 import CustomGroup from "./CustomGroup";
 import { useFlowContextState, useFlowContextApi } from "../flowContext";
+import {
+  isInsideAGroup,
+  hasChildren,
+  calculateAbsolutePosition,
+  updateChildrensLevel,
+} from "./nodeUtilis";
 
 const nodeTypes = { customNode: CustomNode, customGroup: CustomGroup };
 
@@ -77,104 +83,9 @@ const Flow = () => {
     [reactFlowInstance]
   );
 
+  //save the current node when it starts to be dragged
   const onNodeDragStart = (evt, node) => {
     dragRef.current = node;
-  };
-
-  //Is node A son of node B?
-  const isASon = (nodeA, nodeB) => {
-    if (!nodeA || !nodeB) {
-      return false;
-    }
-
-    if (nodes.length < 2) {
-      return false;
-    }
-
-    if (nodeA.id === nodeB.id) {
-      return false;
-    }
-
-    if (!nodeA.parentNode) {
-      return false;
-    }
-
-    if (nodeA.parentNode === nodeB.id) {
-      return true;
-    }
-
-    return isASon(
-      nodes.find((n) => n.id === nodeA.parentNode),
-      nodeB
-    );
-  };
-
-  // calculate absolute position of a node
-  const calculateAbsolutePosition = (node) => {
-    if (!node) {
-      return { x: 0, y: 0 };
-    }
-
-    if (!node.parentNode) {
-      return node.position;
-    }
-
-    const parentNode = nodes.find((n) => n.id === node.parentNode);
-
-    const parentAbsolutePosition = calculateAbsolutePosition(parentNode);
-
-    return {
-      x: parentAbsolutePosition.x + node.position.x,
-      y: parentAbsolutePosition.y + node.position.y,
-    };
-  };
-
-  //check if the node is inside a group
-  const isInsideAGroup = (nodeA, nodeB, nodesArr) => {
-    if (!nodeA || !nodeB) {
-      return false;
-    }
-
-    if (nodesArr.length < 2) {
-      return false;
-    }
-
-    // calculate absolute position of the nodes
-    const absolutePositionA = calculateAbsolutePosition(nodeA);
-    const absolutePositionB = calculateAbsolutePosition(nodeB);
-
-    // calculate the center point of the node from position and dimensions
-    const centerX = absolutePositionA.x + nodeA.width / 2;
-    const centerY = absolutePositionA.y + nodeA.height / 2;
-
-    const isInsideB =
-      centerX > absolutePositionB.x &&
-      centerX < absolutePositionB.x + nodeB.width &&
-      centerY > absolutePositionB.y &&
-      centerY < absolutePositionB.y + nodeB.height &&
-      nodeB.type === "customGroup" &&
-      nodeB.id !== nodeA.id; // this is needed, otherwise we would always find the dragged node
-
-    //If A is inside a B
-    if (isInsideB) {
-      //If target (nodeB) is a child of the nodeA, return false
-      return !isASon(nodeB, nodeA);
-    }
-
-    return false;
-  };
-
-  //Has children?
-  const hasChildren = (node, nodesArr) => {
-    if (!node) {
-      return false;
-    }
-
-    if (nodesArr.length < 2) {
-      return false;
-    }
-
-    return nodesArr.some((n) => n.parentNode === node.id);
   };
 
   //set the target group
@@ -214,30 +125,6 @@ const Flow = () => {
     }
   };
 
-  const updateChildrensLevel = (parentNode, nodesArr, copyArr) => {
-    // console.log("updateChildrensLevel", parentNode.id);
-    if (parentNode.type !== "customGroup") {
-      return;
-    }
-
-    copyArr = copyArr || [...nodesArr];
-
-    if (copyArr.length < 2) {
-      return;
-    }
-
-    //remove parent node from copy
-    copyArr = copyArr.filter((node) => node.id !== parentNode.id);
-
-    for (let i = 0; i < copyArr.length; i++) {
-      if (copyArr[i].parentNode === parentNode.id) {
-        const index = nodesArr.findIndex((node) => node.id === copyArr[i].id);
-        nodesArr[index].data.level = parentNode.data.level + 1;
-        updateChildrensLevel(nodesArr[index], nodesArr, copyArr);
-      }
-    }
-  };
-
   //Add or remove a node from a group
   const onNodeDragStop = (evt, node) => {
     console.log("target", target, "parent", node.parentNode);
@@ -255,8 +142,8 @@ const Flow = () => {
     //If im inside a group add me to it
     if (target && typeof target === "object") {
       // calculate absolute position of the nodes
-      const absolutePositionA = calculateAbsolutePosition(node);
-      const absolutePositionB = calculateAbsolutePosition(target);
+      const absolutePositionA = calculateAbsolutePosition(node, nodes);
+      const absolutePositionB = calculateAbsolutePosition(target, nodes);
 
       //Calculate the position of the node inside the group
       const position = {
