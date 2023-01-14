@@ -1,51 +1,74 @@
-import mqttConnection from "./mqttConnection";
+import mqtt from "mqtt";
+import Keys from "./Keys";
+
+const options = {
+  port: Keys.PORT,
+  username: Keys.USERNAME,
+  password: Keys.PASSWORD,
+  protocol: "mqtt",
+  protocolVersion: 3.1,
+  host: Keys.HOST,
+};
 
 class Mqtt {
   static client = null;
-  static channels = [];
+  static actions = [];
 
-  static async connect() {
-    this.client = await mqttConnection();
-
-    if (this.client) {
-      console.log("Connected to MQTT");
-      this.onMessage();
-      return true;
-    } else {
-      console.log("Failed to connect to MQTT");
-      return false;
-    }
-  }
-
-  static async subscribe(channel, callback) {
-    if (this.client) {
-      this.client.subscribe(channel, (error) => {
-        if (error) {
-          console.error(error);
+  static connect() {
+    return new Promise((resolve, reject) => {
+      const client = mqtt.connect(options);
+      client.client.on("connect", (error) => {
+        if (!error) {
+          console.log("Connected to MQTT");
+          resolve();
+          this.onMessage();
         } else {
-          this.channels.push({ channel, callback });
+          console.error(new Error("Connection Error"));
+          reject();
         }
       });
-    }
+    });
   }
 
-  static async publish(topic, message) {
+  static onMessage() {
+    this.client.on("message", (topic, message) => {
+      const action = this.actions.find((action) => action.channel === topic);
+      if (action) {
+        action.callback(message);
+      }
+    });
+  }
+
+  static subscribe(channel, callback) {
+    this.client?.subscribe(channel, (error) => {
+      if (!error) {
+        this.actions.push({ channel, callback });
+      } else {
+        console.error(new Error(`Error on subcribe topic: ${channel}`));
+      }
+    });
+  }
+
+  static publish(topic, message) {
     if (this.client) {
       this.client.publish(topic, message);
     }
   }
 
-  static onMessage() {
-    this.client.on("message", function (topic, message) {
-      const channel = Mqtt.channels.find((c) => c.channel === topic);
-      if (channel) {
-        channel.callback(message);
-      }
-    });
-  }
-
   static async closeConnection() {
     this.client.end();
+  }
+
+  static onConnectedDevice(callback) {
+    this.subscribe("broker/admin/connected-device", callback);
+  }
+
+  static onDisconectedDevice(callback) {
+    this.subscribe("broker/admin/disconnected-device", callback);
+  }
+
+  static sendChannel(channel, deviceId) {
+    this.publish("workstation/admin");
   }
 }
 
