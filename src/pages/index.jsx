@@ -1,4 +1,11 @@
+import { useEffect, useRef } from "react";
+
 function Home() {
+  const effectRef = useRef(false);
+  useEffect(() => {
+    
+  },[]);
+
   return (
     <div
       style={{
@@ -11,7 +18,7 @@ function Home() {
         // padding: 20,
       }}
     >
-      <text>WELCOME TO THE APP</text>
+      <p>WELCOME TO THE APP</p>
     </div>
   );
 }

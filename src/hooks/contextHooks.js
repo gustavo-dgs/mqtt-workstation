@@ -5,7 +5,7 @@ const AppContext = createContext();
 const useAppContext = () => useContext(AppContext);
 
 const AppContextProvider = ({ children }) => {
-  console.log("StoreProvider");
+  console.log("ContextProvider");
 
   //Load User
   useEffect(() => {

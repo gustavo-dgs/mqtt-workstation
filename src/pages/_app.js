@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import React from "react";
 import { Provider } from "react-redux";
 import { ReactFlowProvider } from "reactflow";
 import store from "../store";

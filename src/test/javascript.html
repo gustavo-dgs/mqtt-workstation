@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    class B {
+      static arrA = [];
+
+      static add(letter) {
+        const newLetter = {
+          letter: letter,
+          id: "",
+          foo: () => console.log("GUS")
+        };
+
+        setTimeout(() => {
+          newLetter.id = Math.random().toString(16).slice(2);
+          newLetter.foo();
+        }, 2000);
+
+        if (newLetter.letter === "B") {
+          setTimeout(() => {
+            this.remove("B");
+          }, 4000);
+        }
+
+        setTimeout(() => {
+          newLetter.foo();
+        }, 8000);
+
+        this.arrA.push(newLetter);
+      }
+
+      static remove(letter) {
+        this.arrA = this.arrA.filter((a) => a.letter !== letter);
+      }
+    }
+
+    B.add("A");
+    B.add("B");
+    B.add("C");
+
+
+
+    console.log(B.arrA);
+
+    setTimeout(() => {
+      console.log(B.arrA)
+    }, 2010);
+
+    setTimeout(() => {
+      console.log(B.arrA);
+      B.arrA[0].foo = () => console.log("JES");
+    }, 4010);
+
+    setTimeout(() => {
+      console.log(B.arrA);
+    }, 8010);
+
+
+
+  </script>
+
+</body>
+
+</html>
