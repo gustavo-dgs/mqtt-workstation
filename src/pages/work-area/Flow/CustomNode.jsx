@@ -6,6 +6,16 @@ import ResizableInput from "./ResizableInput";
 
 const WIDTH = 80;
 
+/*
+data = {
+  icon: "💡",
+  label: "Lampada",
+  isOnline: true,
+  level,
+  deviceId,
+}
+*/
+
 const CustomNode = ({ id, data, disabled }) => {
   const { setNodes } = useFlowContextApi();
 
@@ -51,7 +61,7 @@ const CustomNode = ({ id, data, disabled }) => {
           justifyContent="center"
           alignItems="center"
         >
-          <Typography variant="h3">{data.device}</Typography>
+          <Typography variant="h3">{data.icon}</Typography>
         </Stack>
 
         {!disabled && (

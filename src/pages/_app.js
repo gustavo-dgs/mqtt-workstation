@@ -1,15 +1,14 @@
 import "../styles/globals.css";
 import React from "react";
-import { Provider } from "react-redux";
 import { ReactFlowProvider } from "reactflow";
-import store from "../store";
+import { AppContextProvider } from "../hooks/contextHooks";
 
 export default function App({ Component, pageProps }) {
   return (
-    <ReactFlowProvider>
-      <Provider store={store}>
+    <AppContextProvider>
+      <ReactFlowProvider>
         <Component {...pageProps} />
-      </Provider>
-    </ReactFlowProvider>
+      </ReactFlowProvider>
+    </AppContextProvider>
   );
 }
