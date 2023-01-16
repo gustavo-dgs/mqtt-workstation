@@ -61,11 +61,8 @@ const FlowContextProvider = ({ children }) => {
     );
 
     device.workstation = workstation.firebaseId;
-
-    if (!device.workstation) {
-      device.nodeId = nodeId;
-      device.domain = user;
-    }
+    device.nodeId = nodeId;
+    device.domain = user;
 
     device.channel = user + "/" + workstation.firebaseId + "/" + device.mqttId;
 
