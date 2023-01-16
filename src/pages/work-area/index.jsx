@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { Stack } from "@mui/material";
 import { FlowContextProvider } from "./flowContext";
-import LateralMenu from "./LateralMenu";
+import LeftMenu from "./LateralMenu/LeftMenu";
 import Flow from "./Flow";
 import { useAppContextApi } from "../../hooks/contextHooks";
 
 const WorkArea = () => {
-  console.log("WorkArea");
+  // console.log("WorkArea");
 
   const { getDevicesFromDb } = useAppContextApi();
   const firstTimeRef = useRef(false);
@@ -30,7 +30,7 @@ const WorkArea = () => {
             height: "100%",
           }}
         >
-          <LateralMenu />
+          <LeftMenu />
           <Flow />
         </Stack>
       </FlowContextProvider>

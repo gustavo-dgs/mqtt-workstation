@@ -42,10 +42,8 @@ const AppContextProvider = ({ children }) => {
   useEffect(() => {
     const brokerDevicesArr = Array.from(brokerDevices.values());
     const newDevices =
-      brokerDevicesArr.filter((device) => !device.nodeId && device.isOnline) ||
-      [];
+      brokerDevicesArr.filter((device) => !device.nodeId) || [];
     setNewBrokerDevices(newDevices);
-    console.log("newDevices", newDevices);
   }, [brokerDevices]);
 
   //brokerDevices Api

@@ -2,7 +2,7 @@ import "@reactflow/node-resizer/dist/style.css";
 // import { memo } from "react";
 import { Box } from "@mui/material";
 import { useFlowContextApi } from "../flowContext";
-import ResizableInput from "./ResizableInput";
+import ResizableInput from "../../../components/ResizableInput";
 import { NodeResizer } from "@reactflow/node-resizer";
 
 const CustomGroup = ({ id, data, selected }) => {

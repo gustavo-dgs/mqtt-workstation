@@ -8,8 +8,6 @@ import ReactFlow, {
   updateEdge,
   MarkerType,
 } from "reactflow";
-import CustomNode from "./CustomNode";
-import CustomGroup from "./CustomGroup";
 import { useFlowContextState, useFlowContextApi } from "../flowContext";
 import {
   isInsideAGroup,
@@ -17,8 +15,7 @@ import {
   calculateAbsolutePosition,
   updateChildrensLevel,
 } from "./nodeUtilis";
-
-const nodeTypes = { customNode: CustomNode, customGroup: CustomGroup };
+import { nodeTypes } from "../nodeCollection";
 
 const Flow = () => {
   // console.log("Flow");
@@ -65,10 +62,10 @@ const Flow = () => {
       event.preventDefault();
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const icon = event.dataTransfer.getData("application/reactflow");
+      const nodeInfo = event.dataTransfer.getData("application/reactflow");
 
       // check if the dropped element is valid
-      if (typeof icon === "undefined" || !icon) {
+      if (!nodeInfo) {
         return;
       }
 
@@ -77,7 +74,9 @@ const Flow = () => {
         y: event.clientY - reactFlowBounds.top,
       });
 
-      addNewNode(position, icon);
+      const json = JSON.parse(nodeInfo);
+
+      addNewNode(position, json.type, json.data);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [reactFlowInstance]
@@ -127,7 +126,7 @@ const Flow = () => {
 
   //Add or remove a node from a group
   const onNodeDragStop = (evt, node) => {
-    console.log("target", target, "parent", node.parentNode);
+    // console.log("target", target, "parent", node.parentNode);
 
     //Remove hover effect from all groups
     setNodes((prevNodes) =>

@@ -2,7 +2,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { Handle, Position } from "reactflow";
 import { useFlowContextApi } from "../flowContext";
-import ResizableInput from "./ResizableInput";
+import ResizableInput from "../../../components/ResizableInput";
 
 const WIDTH = 80;
 
@@ -17,6 +17,7 @@ data = {
 */
 
 const CustomNode = ({ id, data, disabled }) => {
+  const { icon, label } = data;
   const { setNodes } = useFlowContextApi();
 
   const onTextChange = (e) => {
@@ -61,7 +62,7 @@ const CustomNode = ({ id, data, disabled }) => {
           justifyContent="center"
           alignItems="center"
         >
-          <Typography variant="h3">{data.icon}</Typography>
+          <Typography variant="h3">{icon}</Typography>
         </Stack>
 
         {!disabled && (
@@ -69,7 +70,7 @@ const CustomNode = ({ id, data, disabled }) => {
             <Handle
               id={"source"}
               type={"source"}
-              position={Position.Top}
+              position={Position.Right}
               style={{
                 backgroundColor: "red",
                 width: 10,
@@ -79,7 +80,7 @@ const CustomNode = ({ id, data, disabled }) => {
             <Handle
               id={"target"}
               type={"target"}
-              position={Position.Bottom}
+              position={Position.Left}
               style={{
                 backgroundColor: "cyan",
                 width: 10,
@@ -88,7 +89,7 @@ const CustomNode = ({ id, data, disabled }) => {
             />
 
             <ResizableInput
-              value={data.label}
+              value={label}
               onChange={onTextChange}
               sx={{
                 position: "absolute",

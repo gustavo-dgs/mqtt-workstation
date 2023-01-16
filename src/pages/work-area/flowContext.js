@@ -1,5 +1,7 @@
 import React, { useContext, createContext, useMemo, useCallback } from "react";
 import { useNodesState, useEdgesState } from "reactflow";
+import { defaultNode, nodeCollection } from "./nodeCollection";
+import { randomId } from "../../utils";
 
 const FlowContextState = createContext();
 const FlowContextApi = createContext();
@@ -24,24 +26,14 @@ const FlowContextProvider = ({ children }) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const addNewNode = useCallback(
-    (position = { x: 0, y: 0 }, icon) => {
+    (position = { x: 0, y: 0 }, type = defaultNode.name, data) => {
       setNodes((prevNodes) => {
-        const maxId =
-          prevNodes.length > 0
-            ? Math.max(...prevNodes.map((node) => Number.parseInt(node.id)))
-            : 0;
-
-        const newStringId = (maxId + 1).toString();
-
         const newNode = {
-          id: newStringId,
-          type: "customNode",
+          id: randomId(),
+          type,
           data: {
-            icon,
-            label: "Node-" + newStringId,
-            isOnline: false,
+            ...data,
             level: 0,
-            deviceId: null,
           },
           position,
         };
@@ -54,29 +46,11 @@ const FlowContextProvider = ({ children }) => {
 
   const addNewGroup = useCallback(
     (position = { x: 0, y: 0 }) => {
-      setNodes((prevNodes) => {
-        const maxId =
-          prevNodes.length > 0
-            ? Math.max(...prevNodes.map((node) => Number.parseInt(node.id)))
-            : 0;
-
-        const newStringId = (maxId + 1).toString();
-
-        const newNode = {
-          id: newStringId,
-          type: "customGroup",
-          data: { label: "Group-" + newStringId, level: 0 },
-          position,
-          style: {
-            width: 300,
-            height: 300,
-          },
-        };
-
-        return [...prevNodes, newNode];
+      addNewNode(position, nodeCollection.CustomGroup.name, {
+        label: "Group",
       });
     },
-    [setNodes]
+    [addNewNode]
   );
 
   const removeNodeFromGroup = useCallback(
