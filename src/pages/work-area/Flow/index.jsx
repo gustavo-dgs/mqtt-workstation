@@ -16,10 +16,11 @@ import {
   updateChildrensLevel,
 } from "./nodeUtilis";
 import { nodeCollection, nodeTypes } from "../nodeCollection";
+import { useAppContextApi } from "../../../hooks/contextHooks";
 
 const Flow = () => {
   // console.log("Flow");
-
+  const { addSuscription, removeSuscription } = useAppContextApi();
   const { nodes, edges, onNodesChange, onEdgesChange } = useFlowContextState();
   const { setEdges, setNodes, addNewNode, addDeviceNode } = useFlowContextApi();
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -39,16 +40,28 @@ const Flow = () => {
       }
 
       setEdges((eds) => addEdge(connection, eds));
+
+      addSuscription(connection, nodes);
     },
-    [setEdges]
+    [nodes, setEdges, addSuscription]
   );
 
   //Update existing edges
   const onEdgeUpdate = useCallback(
-    (oldEdge, newConnection) =>
-      setEdges((els) => updateEdge(oldEdge, newConnection, els)),
+    (oldEdge, newConnection) => {
+      setEdges((els) => updateEdge(oldEdge, newConnection, els));
+      console.log("onEdgeUpdate", newConnection);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
+  );
+
+  const onEdgesDelete = useCallback(
+    (edgesToDelete) => {
+      // setEdges((els) => els.filter((el) => !edgesToDelete.includes(el)));
+      removeSuscription(edgesToDelete, nodes);
+    },
+    [nodes, removeSuscription]
   );
 
   //Add a div inside the flow
@@ -257,6 +270,7 @@ const Flow = () => {
         onConnect={onConnect}
         onEdgeUpdate={onEdgeUpdate}
         onInit={setReactFlowInstance}
+        onEdgesDelete={onEdgesDelete}
         onDrop={onDrop}
         onDragOver={onDragOver}
         onNodeDragStart={onNodeDragStart}

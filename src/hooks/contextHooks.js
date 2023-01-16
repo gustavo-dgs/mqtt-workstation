@@ -1,13 +1,6 @@
-import React, {
-  useContext,
-  createContext,
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
+import React, { useContext, createContext, useState, useEffect } from "react";
 import Device from "../services/mqtt-firebase/models/Device";
-import Workstation from "../services/mqtt-firebase/models/Workstation";
+// import Workstation from "../services/mqtt-firebase/models/Workstation";
 
 const AppContextState = createContext();
 const AppContextUser = createContext();
@@ -19,8 +12,8 @@ const useAppContextUser = () => useContext(AppContextUser);
 
 const AppContextProvider = ({ children }) => {
   // console.log("ContextProvider");
-  const [user, setUser] = useState(null);
-  const [workstation, setWorkstation] = useState(null);
+  const [user, setUser] = useState("gutierrez-house");
+  const [workstation, setWorkstation] = useState({ firebaseId: "workstation" });
   const [brokerDevices, setBrokerDevices] = useState(new Map());
   const [newBrokerDevices, setNewBrokerDevices] = useState([]);
   const [oldBrokerDevices, setOldBrokerDevices] = useState([]);
@@ -29,23 +22,21 @@ const AppContextProvider = ({ children }) => {
 
   //Load User
   useEffect(() => {
-    const getData = async () => {
-      const ws = await Workstation.get(
-        "gutierrez-house",
-        "Gustavo's Workspace"
-      );
-
-      if (!(ws instanceof Error)) setWorkstation(ws);
-    };
-
-    getData();
+    // const getData = async () => {
+    //   const ws = await Workstation.get(
+    //     "gutierrez-house",
+    //     "Gustavo's Workspace"
+    //   );
+    //   if (!(ws instanceof Error)) setWorkstation(ws);
+    // };
+    // getData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, []);
 
   //Load user data
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workstation]);
+  }, []);
 
   useEffect(() => {
     const brokerDevicesArr = Array.from(brokerDevices.values());
@@ -88,13 +79,13 @@ const AppContextProvider = ({ children }) => {
     Device.update(device);
   };
 
-  const getDevices = useCallback(() => {
+  const getDevices = () => {
     const devices = [];
     brokerDevices.forEach((device) => {
       devices.push(device);
     });
     return devices;
-  }, [brokerDevices]);
+  };
 
   const onDeviceAdd = (devices) => {
     setBrokerDevices((prevState) => {
@@ -107,6 +98,7 @@ const AppContextProvider = ({ children }) => {
   };
 
   const onDeviceUpdate = (devices) => {
+    console.log("onDeviceUpdate", devices);
     setBrokerDevices((prevState) => {
       const newState = new Map(prevState);
       devices.forEach((device) => {
@@ -126,7 +118,7 @@ const AppContextProvider = ({ children }) => {
     });
   };
 
-  const getDevicesFromDb = useCallback(async () => {
+  const getDevicesFromDb = async () => {
     const unsuscribe = await Device.getAll(
       user,
       onDeviceAdd,
@@ -137,38 +129,83 @@ const AppContextProvider = ({ children }) => {
     setUnsuscribeFromBrokerDevices(() => unsuscribe);
 
     return unsuscribe;
-  }, [user]);
+  };
 
-  const stateValue = useMemo(
-    () => ({
-      brokerDevices,
-      newBrokerDevices,
-      oldBrokerDevices,
-    }),
-    [brokerDevices, newBrokerDevices, oldBrokerDevices]
-  );
+  const addSuscription = (edges, nodes) => {
+    if (!Array.isArray(edges)) {
+      edges = [edges];
+    }
 
-  const apiValue = useMemo(
-    () => ({
-      setUser,
-      setWorkstation,
-      addDevice,
-      removeDevice,
-      updateDevice,
-      getDevices,
-      getDevicesFromDb,
-      unsuscribeFromBrokerDevices,
-    }),
-    [getDevices, getDevicesFromDb, unsuscribeFromBrokerDevices]
-  );
+    edges.forEach((edge) => {
+      const sourceNode = nodes.find((node) => node.id === edge.source);
+      const targetNode = nodes.find((node) => node.id === edge.target);
 
-  const userValue = useMemo(
-    () => ({
-      user,
-      workstation,
-    }),
-    [user, workstation]
-  );
+      if (!sourceNode || !targetNode) return;
+
+      if (
+        sourceNode.type === "DeviceNode" &&
+        targetNode.type === "DeviceNode"
+      ) {
+        const publisherDevice = sourceNode.data.device;
+        const suscriptortDevice = targetNode.data.device;
+
+        suscriptortDevice.suscriptions = suscriptortDevice.suscriptions || [];
+
+        suscriptortDevice.suscriptions.push(publisherDevice.channel);
+
+        console.log(suscriptortDevice);
+        updateDevice(suscriptortDevice);
+      }
+    });
+  };
+
+  const removeSuscription = (edges, nodes) => {
+    if (!Array.isArray(edges)) {
+      edges = [edges];
+    }
+
+    edges.forEach((edge) => {
+      const sourceNode = nodes.find((node) => node.id === edge.source);
+      const targetNode = nodes.find((node) => node.id === edge.target);
+
+      if (!sourceNode || !targetNode) return;
+
+      if (sourceNode.type === "device" && targetNode.type === "device") {
+        const publisherDevice = sourceNode.data.device;
+        const suscriptortDevice = targetNode.data.device;
+
+        suscriptortDevice.suscriptions = suscriptortDevice.suscriptions.filter(
+          (suscription) => suscription !== publisherDevice.mqttId
+        );
+
+        updateDevice(suscriptortDevice);
+      }
+    });
+  };
+
+  const stateValue = {
+    brokerDevices,
+    newBrokerDevices,
+    oldBrokerDevices,
+  };
+
+  const apiValue = {
+    setUser,
+    setWorkstation,
+    addDevice,
+    removeDevice,
+    updateDevice,
+    getDevices,
+    getDevicesFromDb,
+    unsuscribeFromBrokerDevices,
+    addSuscription,
+    removeSuscription,
+  };
+
+  const userValue = {
+    user,
+    workstation,
+  };
 
   return (
     <AppContextState.Provider value={stateValue}>

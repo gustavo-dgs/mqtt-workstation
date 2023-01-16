@@ -1,4 +1,4 @@
-import React, { useContext, createContext, useMemo, useCallback } from "react";
+import React, { useContext, createContext } from "react";
 import { useNodesState, useEdgesState } from "reactflow";
 import { defaultNode, nodeCollection } from "./nodeCollection";
 import { randomId } from "../../utils";
@@ -28,89 +28,81 @@ const FlowContextProvider = ({ children }) => {
   const { updateDevice } = useAppContextApi();
   const { user, workstation } = useAppContextUser();
 
-  const addNewNode = useCallback(
-    (position = { x: 0, y: 0 }, type = defaultNode.name, data) => {
-      const nodeId = randomId();
+  const addNewNode = (
+    position = { x: 0, y: 0 },
+    type = defaultNode.name,
+    data
+  ) => {
+    const nodeId = randomId();
 
-      setNodes((prevNodes) => {
-        const newNode = {
-          id: nodeId,
-          type,
-          data: {
-            ...data,
-            level: 0,
-          },
-          position,
-        };
-
-        return [...prevNodes, newNode];
-      });
-
-      return nodeId;
-    },
-    [setNodes]
-  );
-
-  const addDeviceNode = useCallback(
-    (position = { x: 0, y: 0 }, device) => {
-      const nodeData = nodeCollection.DeviceNode.setData(device, null, null);
-      const nodeId = addNewNode(
+    setNodes((prevNodes) => {
+      const newNode = {
+        id: nodeId,
+        type,
+        data: {
+          ...data,
+          level: 0,
+        },
         position,
-        nodeCollection.DeviceNode.name,
-        nodeData
-      );
+      };
+
+      return [...prevNodes, newNode];
+    });
+
+    return nodeId;
+  };
+
+  const addDeviceNode = (position = { x: 0, y: 0 }, device) => {
+    const nodeData = nodeCollection.DeviceNode.setData(device, null, null);
+    const nodeId = addNewNode(
+      position,
+      nodeCollection.DeviceNode.name,
+      nodeData
+    );
+
+    device.workstation = workstation.firebaseId;
+
+    if (!device.workstation) {
       device.nodeId = nodeId;
-      device.workstationId = workstation;
       device.domain = user;
-      updateDevice(device);
-    },
-    [addNewNode, updateDevice, user, workstation]
-  );
+    }
 
-  const addNewGroup = useCallback(
-    (position = { x: 0, y: 0 }) => {
-      addNewNode(position, nodeCollection.CustomGroup.name, {
-        label: "Group",
+    device.channel = user + "/" + workstation.firebaseId + "/" + device.mqttId;
+
+    updateDevice(device);
+  };
+
+  const addNewGroup = (position = { x: 0, y: 0 }) => {
+    addNewNode(position, nodeCollection.CustomGroup.name, {
+      label: "Group",
+    });
+  };
+
+  const removeNodeFromGroup = (nodeId) => {
+    setNodes((prevNodes) => {
+      const newNodes = prevNodes.map((node) => {
+        if (node.id === nodeId) {
+          return {
+            ...node,
+            parentNode: null,
+          };
+        }
+        return node;
       });
-    },
-    [addNewNode]
-  );
+      return newNodes;
+    });
+  };
 
-  const removeNodeFromGroup = useCallback(
-    (nodeId) => {
-      setNodes((prevNodes) => {
-        const newNodes = prevNodes.map((node) => {
-          if (node.id === nodeId) {
-            return {
-              ...node,
-              parentNode: null,
-            };
-          }
-          return node;
-        });
-        return newNodes;
-      });
-    },
-    [setNodes]
-  );
+  const stateValue = { nodes, edges, onNodesChange, onEdgesChange };
 
-  const stateValue = useMemo(
-    () => ({ nodes, edges, onNodesChange, onEdgesChange }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [nodes, edges, onNodesChange, onEdgesChange]
-  );
-  const apiValue = useMemo(
-    () => ({
-      setNodes,
-      setEdges,
-      addNewNode,
-      addNewGroup,
-      removeNodeFromGroup,
-      addDeviceNode,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setNodes, setEdges, addNewNode, addNewGroup, removeNodeFromGroup]
-  );
+  const apiValue = {
+    setNodes,
+    setEdges,
+    addNewNode,
+    addNewGroup,
+    removeNodeFromGroup,
+    addDeviceNode,
+  };
 
   return (
     <FlowContextState.Provider value={stateValue}>

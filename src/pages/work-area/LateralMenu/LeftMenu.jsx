@@ -81,7 +81,7 @@ const AccordeonStep = ({
 const LateralMenu = ({ newBrokerDevices, oldBrokerDevices }) => {
   // console.log("LateralMenu");
   const [expanded, setExpanded] = useState(false);
-  const { addNewNode, addNewGroup } = useFlowContextApi();
+  const { addNewGroup } = useFlowContextApi();
   const { workstation } = useAppContextUser();
 
   const handleChange = (panel) => (event, isExpanded) => {
@@ -128,13 +128,6 @@ const LateralMenu = ({ newBrokerDevices, oldBrokerDevices }) => {
             {workstation ? workstation.name : "Workstation"}
           </Typography>
 
-          <Button
-            variant="contained"
-            onClick={() => addNewNode({ x: 0, y: 0 })}
-            sx={{ alignSelf: "center", justifySelf: "center" }}
-          >
-            Add Node
-          </Button>
           <Button
             onClick={() => addNewGroup({ x: 0, y: 0 })}
             variant="outlined"
