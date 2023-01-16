@@ -2,6 +2,7 @@ import React, { useContext, createContext, useMemo, useCallback } from "react";
 import { useNodesState, useEdgesState } from "reactflow";
 import { defaultNode, nodeCollection } from "./nodeCollection";
 import { randomId } from "../../utils";
+import { useAppContextApi, useAppContextUser } from "../../hooks/contextHooks";
 
 const FlowContextState = createContext();
 const FlowContextApi = createContext();
@@ -24,12 +25,16 @@ const FlowContextProvider = ({ children }) => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const { updateDevice } = useAppContextApi();
+  const { user, workstation } = useAppContextUser();
 
   const addNewNode = useCallback(
     (position = { x: 0, y: 0 }, type = defaultNode.name, data) => {
+      const nodeId = randomId();
+
       setNodes((prevNodes) => {
         const newNode = {
-          id: randomId(),
+          id: nodeId,
           type,
           data: {
             ...data,
@@ -40,8 +45,26 @@ const FlowContextProvider = ({ children }) => {
 
         return [...prevNodes, newNode];
       });
+
+      return nodeId;
     },
     [setNodes]
+  );
+
+  const addDeviceNode = useCallback(
+    (position = { x: 0, y: 0 }, device) => {
+      const nodeData = nodeCollection.DeviceNode.setData(device, null, null);
+      const nodeId = addNewNode(
+        position,
+        nodeCollection.DeviceNode.name,
+        nodeData
+      );
+      device.nodeId = nodeId;
+      device.workstationId = workstation;
+      device.domain = user;
+      updateDevice(device);
+    },
+    [addNewNode, updateDevice, user, workstation]
   );
 
   const addNewGroup = useCallback(
@@ -83,6 +106,7 @@ const FlowContextProvider = ({ children }) => {
       addNewNode,
       addNewGroup,
       removeNodeFromGroup,
+      addDeviceNode,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [setNodes, setEdges, addNewNode, addNewGroup, removeNodeFromGroup]

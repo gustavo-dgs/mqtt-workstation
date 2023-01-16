@@ -15,13 +15,13 @@ import {
   calculateAbsolutePosition,
   updateChildrensLevel,
 } from "./nodeUtilis";
-import { nodeTypes } from "../nodeCollection";
+import { nodeCollection, nodeTypes } from "../nodeCollection";
 
 const Flow = () => {
   // console.log("Flow");
 
   const { nodes, edges, onNodesChange, onEdgesChange } = useFlowContextState();
-  const { setEdges, setNodes, addNewNode } = useFlowContextApi();
+  const { setEdges, setNodes, addNewNode, addDeviceNode } = useFlowContextApi();
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   // target is the node that the node is dragged over
   const [target, setTarget] = useState(null);
@@ -76,7 +76,15 @@ const Flow = () => {
 
       const json = JSON.parse(nodeInfo);
 
-      addNewNode(position, json.type, json.data);
+      switch (json.type) {
+        case nodeCollection.DeviceNode.name:
+          addDeviceNode(position, json.data.device);
+          break;
+
+        default:
+          addNewNode(position, json.type, json.data);
+          break;
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [reactFlowInstance]

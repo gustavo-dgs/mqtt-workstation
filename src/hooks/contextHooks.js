@@ -7,30 +7,38 @@ import React, {
   useCallback,
 } from "react";
 import Device from "../services/mqtt-firebase/models/Device";
+import Workstation from "../services/mqtt-firebase/models/Workstation";
 
 const AppContextState = createContext();
+const AppContextUser = createContext();
 const AppContextApi = createContext();
 
 const useAppContextState = () => useContext(AppContextState);
 const useAppContextApi = () => useContext(AppContextApi);
-
-const initialWorkstation = {
-  domain: "gutierrez-house",
-  mqttIp: 1,
-  name: "Gustavo's Workspace",
-};
+const useAppContextUser = () => useContext(AppContextUser);
 
 const AppContextProvider = ({ children }) => {
   // console.log("ContextProvider");
   const [user, setUser] = useState(null);
-  const [workstation, setWorkstation] = useState(initialWorkstation);
+  const [workstation, setWorkstation] = useState(null);
   const [brokerDevices, setBrokerDevices] = useState(new Map());
   const [newBrokerDevices, setNewBrokerDevices] = useState([]);
+  const [oldBrokerDevices, setOldBrokerDevices] = useState([]);
   const [unsuscribeFromBrokerDevices, setUnsuscribeFromBrokerDevices] =
     useState(() => {});
 
   //Load User
   useEffect(() => {
+    const getData = async () => {
+      const ws = await Workstation.get(
+        "gutierrez-house",
+        "Gustavo's Workspace"
+      );
+
+      if (!(ws instanceof Error)) setWorkstation(ws);
+    };
+
+    getData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
@@ -44,6 +52,12 @@ const AppContextProvider = ({ children }) => {
     const newDevices =
       brokerDevicesArr.filter((device) => !device.nodeId) || [];
     setNewBrokerDevices(newDevices);
+  }, [brokerDevices]);
+
+  useEffect(() => {
+    const brokerDevicesArr = Array.from(brokerDevices.values());
+    const oldDevices = brokerDevicesArr.filter((device) => device.nodeId) || [];
+    setOldBrokerDevices(oldDevices);
   }, [brokerDevices]);
 
   //brokerDevices Api
@@ -61,6 +75,7 @@ const AppContextProvider = ({ children }) => {
       newState.delete(device.mqttId, device);
       return newState;
     });
+    device.delete();
   };
 
   const updateDevice = (device) => {
@@ -69,6 +84,8 @@ const AppContextProvider = ({ children }) => {
       newState.set(device.mqttId, device);
       return newState;
     });
+
+    Device.update(device);
   };
 
   const getDevices = useCallback(() => {
@@ -110,22 +127,12 @@ const AppContextProvider = ({ children }) => {
   };
 
   const getDevicesFromDb = useCallback(async () => {
-    const promise = await Device.getAll(
+    const unsuscribe = await Device.getAll(
       user,
       onDeviceAdd,
       onDeviceUpdate,
       onDeviceRemove
     );
-
-    const [devices, unsuscribe] = promise;
-
-    setBrokerDevices((prevState) => {
-      const newState = new Map(prevState);
-      devices.forEach((device) => {
-        newState.set(device.mqttId, device);
-      });
-      return newState;
-    });
 
     setUnsuscribeFromBrokerDevices(() => unsuscribe);
 
@@ -134,12 +141,11 @@ const AppContextProvider = ({ children }) => {
 
   const stateValue = useMemo(
     () => ({
-      user,
-      workstation,
       brokerDevices,
       newBrokerDevices,
+      oldBrokerDevices,
     }),
-    [user, workstation, brokerDevices, newBrokerDevices]
+    [brokerDevices, newBrokerDevices, oldBrokerDevices]
   );
 
   const apiValue = useMemo(
@@ -156,13 +162,28 @@ const AppContextProvider = ({ children }) => {
     [getDevices, getDevicesFromDb, unsuscribeFromBrokerDevices]
   );
 
+  const userValue = useMemo(
+    () => ({
+      user,
+      workstation,
+    }),
+    [user, workstation]
+  );
+
   return (
     <AppContextState.Provider value={stateValue}>
-      <AppContextApi.Provider value={apiValue}>
-        {children}
-      </AppContextApi.Provider>
+      <AppContextUser.Provider value={userValue}>
+        <AppContextApi.Provider value={apiValue}>
+          {children}
+        </AppContextApi.Provider>
+      </AppContextUser.Provider>
     </AppContextState.Provider>
   );
 };
 
-export { AppContextProvider, useAppContextState, useAppContextApi };
+export {
+  AppContextProvider,
+  useAppContextState,
+  useAppContextUser,
+  useAppContextApi,
+};

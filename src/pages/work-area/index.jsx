@@ -9,14 +9,13 @@ const WorkArea = () => {
   // console.log("WorkArea");
 
   const { getDevicesFromDb } = useAppContextApi();
-  const firstTimeRef = useRef(false);
+  const firstTimeRef = useRef(true);
 
   useEffect(() => {
-    if (!firstTimeRef.current) {
-      firstTimeRef.current = true;
+    if (firstTimeRef.current) {
+      firstTimeRef.current = false;
       getDevicesFromDb();
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
