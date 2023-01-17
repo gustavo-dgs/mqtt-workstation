@@ -1,24 +1,23 @@
-import React, { useContext, createContext } from "react";
+import React, {
+  useContext,
+  createContext,
+  useCallback,
+  useEffect,
+} from "react";
 import { useNodesState, useEdgesState } from "reactflow";
 import { defaultNode, nodeCollection } from "./nodeCollection";
 import { randomId } from "../../utils";
-import { useAppContextApi, useAppContextUser } from "../../hooks/contextHooks";
+import {
+  useAppContextApi,
+  useAppContextUser,
+  useAppContextState,
+} from "../../hooks/contextHooks";
 
 const FlowContextState = createContext();
 const FlowContextApi = createContext();
 
 const useFlowContextState = () => useContext(FlowContextState);
 const useFlowContextApi = () => useContext(FlowContextApi);
-
-/*
-data = {
-  icon: "💡",
-  label: "Lampada",
-  isOnline: true,
-  level,
-  deviceId,
-}
-*/
 
 const FlowContextProvider = ({ children }) => {
   // console.log("FlowContextProvider");
@@ -27,6 +26,31 @@ const FlowContextProvider = ({ children }) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const { updateDevice } = useAppContextApi();
   const { user, workstation } = useAppContextUser();
+  const { brokerDevices } = useAppContextState();
+
+  useEffect(() => {
+    const brokerDevicesArr = Array.from(brokerDevices.values());
+
+    setNodes((prevNodes) => {
+      const newNodes = [...prevNodes];
+
+      brokerDevicesArr.forEach((device) => {
+        const index = newNodes.findIndex((node) => {
+          if (node.type === nodeCollection.DeviceNode.name) {
+            return node.data.device.mqttId === device.mqttId;
+          }
+
+          return false;
+        });
+
+        if (index > -1) {
+          newNodes[index].data.device = device;
+        }
+      });
+
+      return newNodes;
+    });
+  }, [brokerDevices]);
 
   const addNewNode = (
     position = { x: 0, y: 0 },
@@ -52,22 +76,26 @@ const FlowContextProvider = ({ children }) => {
     return nodeId;
   };
 
-  const addDeviceNode = (position = { x: 0, y: 0 }, device) => {
-    const nodeData = nodeCollection.DeviceNode.setData(device, null, null);
-    const nodeId = addNewNode(
-      position,
-      nodeCollection.DeviceNode.name,
-      nodeData
-    );
+  const addDeviceNode = useCallback(
+    (position = { x: 0, y: 0 }, device) => {
+      const nodeData = nodeCollection.DeviceNode.setData(device, null, null);
+      const nodeId = addNewNode(
+        position,
+        nodeCollection.DeviceNode.name,
+        nodeData
+      );
 
-    device.workstation = workstation.firebaseId;
-    device.nodeId = nodeId;
-    device.domain = user;
+      device.workstation = workstation.firebaseId;
+      device.nodeId = nodeId;
+      device.domain = user;
 
-    device.channel = user + "/" + workstation.firebaseId + "/" + device.mqttId;
+      device.channel =
+        user + "/" + workstation.firebaseId + "/" + device.mqttId;
 
-    updateDevice(device);
-  };
+      updateDevice(device);
+    },
+    [workstation, user]
+  );
 
   const addNewGroup = (position = { x: 0, y: 0 }) => {
     addNewNode(position, nodeCollection.CustomGroup.name, {
@@ -90,6 +118,71 @@ const FlowContextProvider = ({ children }) => {
     });
   };
 
+  const getDevicesFromEdges = useCallback(
+    (edges) => {
+      if (!Array.isArray(edges)) {
+        edges = [edges];
+      }
+
+      const devicesArr = [];
+
+      edges.forEach((edge) => {
+        const sourceNode = nodes.find((node) => node.id === edge.source);
+        const targetNode = nodes.find((node) => node.id === edge.target);
+
+        if (!sourceNode || !targetNode) return;
+
+        if (
+          sourceNode.type === nodeCollection.DeviceNode.name &&
+          targetNode.type === nodeCollection.DeviceNode.name
+        ) {
+          devicesArr.push({
+            publisherDevice: sourceNode.data.device,
+            subscriptorDevice: targetNode.data.device,
+          });
+        }
+      });
+
+      return devicesArr;
+    },
+    [nodes]
+  );
+
+  const addSubscription = useCallback(
+    (edges) => {
+      const subscriptions = getDevicesFromEdges(edges);
+
+      subscriptions.forEach((subscription) => {
+        const { subscriptorDevice, publisherDevice } = subscription;
+
+        subscriptorDevice.subscriptions = subscriptorDevice.subscriptions || [];
+
+        if (!subscriptorDevice.subscriptions.includes(publisherDevice.mqttId)) {
+          subscriptorDevice.subscriptions.push(publisherDevice.mqttId);
+
+          updateDevice(subscriptorDevice);
+        }
+      });
+    },
+    [nodes, updateDevice]
+  );
+
+  const removeSubscription = (edges) => {
+    const subscriptions = getDevicesFromEdges(edges);
+
+    subscriptions.forEach((subscription) => {
+      const { subscriptorDevice, publisherDevice } = subscription;
+
+      if (!subscriptorDevice.subscriptions) return;
+
+      subscriptorDevice.subscriptions = subscriptorDevice.subscriptions.filter(
+        (subs) => subs !== publisherDevice.mqttId
+      );
+
+      updateDevice(subscriptorDevice);
+    });
+  };
+
   const stateValue = { nodes, edges, onNodesChange, onEdgesChange };
 
   const apiValue = {
@@ -99,6 +192,8 @@ const FlowContextProvider = ({ children }) => {
     addNewGroup,
     removeNodeFromGroup,
     addDeviceNode,
+    addSubscription,
+    removeSubscription,
   };
 
   return (

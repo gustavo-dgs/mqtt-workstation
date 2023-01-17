@@ -16,13 +16,20 @@ import {
   updateChildrensLevel,
 } from "./nodeUtilis";
 import { nodeCollection, nodeTypes } from "../nodeCollection";
-import { useAppContextApi } from "../../../hooks/contextHooks";
+import { useAppContextUser } from "../../../hooks/contextHooks";
 
 const Flow = () => {
   // console.log("Flow");
-  const { addSuscription, removeSuscription } = useAppContextApi();
   const { nodes, edges, onNodesChange, onEdgesChange } = useFlowContextState();
-  const { setEdges, setNodes, addNewNode, addDeviceNode } = useFlowContextApi();
+  const {
+    setEdges,
+    setNodes,
+    addNewNode,
+    addDeviceNode,
+    addSubscription,
+    removeSubscription,
+  } = useFlowContextApi();
+  const { workstation } = useAppContextUser();
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   // target is the node that the node is dragged over
   const [target, setTarget] = useState(null);
@@ -41,9 +48,9 @@ const Flow = () => {
 
       setEdges((eds) => addEdge(connection, eds));
 
-      addSuscription(connection, nodes);
+      addSubscription(connection);
     },
-    [nodes, setEdges, addSuscription]
+    [nodes, setEdges, addSubscription]
   );
 
   //Update existing edges
@@ -59,9 +66,9 @@ const Flow = () => {
   const onEdgesDelete = useCallback(
     (edgesToDelete) => {
       // setEdges((els) => els.filter((el) => !edgesToDelete.includes(el)));
-      removeSuscription(edgesToDelete, nodes);
+      removeSubscription(edgesToDelete);
     },
-    [nodes, removeSuscription]
+    [nodes, removeSubscription]
   );
 
   //Add a div inside the flow
@@ -99,8 +106,8 @@ const Flow = () => {
           break;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [reactFlowInstance]
+
+    [reactFlowInstance, reactFlowWrapper, workstation]
   );
 
   //save the current node when it starts to be dragged
