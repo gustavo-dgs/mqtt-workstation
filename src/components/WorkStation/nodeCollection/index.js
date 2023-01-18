@@ -1,17 +1,21 @@
+import CustomNode from "./CustomNode";
+import CustomGroup from "./CustomGroup";
+import DeviceNode from "./DeviceNode";
+
 const nodeCollection = {
   CustomNode: {
     name: "CustomNode",
-    component: require("./CustomNode").default,
+    component: CustomNode,
     setData: (icon, label) => ({ icon, label }),
   },
   CustomGroup: {
     name: "CustomGroup",
-    component: require("./CustomGroup").default,
+    component: CustomGroup,
     setData: (label) => ({ label }),
   },
   DeviceNode: {
     name: "DeviceNode",
-    component: require("./DeviceNode").default,
+    component: DeviceNode,
     setData: (device, icon, color) => ({ device, icon, color }),
   },
 };

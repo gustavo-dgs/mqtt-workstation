@@ -2,7 +2,7 @@
 import { Box, Stack, Typography } from "@mui/material";
 import { Handle, Position } from "reactflow";
 import { useFlowContextApi } from "../flowContext";
-import ResizableInput from "../../../components/ResizableInput";
+import ResizableInput from "../../../components/_shared/ResizableInput";
 
 const WIDTH = 80;
 

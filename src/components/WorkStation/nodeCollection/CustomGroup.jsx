@@ -2,8 +2,10 @@ import "@reactflow/node-resizer/dist/style.css";
 // import { memo } from "react";
 import { Box } from "@mui/material";
 import { useFlowContextApi } from "../flowContext";
-import ResizableInput from "../../../components/ResizableInput";
+import ResizableInput from "../../../components/_shared/ResizableInput";
 import { NodeResizer } from "@reactflow/node-resizer";
+
+const WIDTH = 200;
 
 const CustomGroup = ({ id, data, selected }) => {
   const { setNodes } = useFlowContextApi();
@@ -28,6 +30,13 @@ const CustomGroup = ({ id, data, selected }) => {
 
   return (
     <>
+      <NodeResizer
+        color="#3367D9"
+        isVisible={selected}
+        minWidth={WIDTH}
+        minHeight={WIDTH}
+        lineStyle={{ borderWidth: 1 }}
+      />
       <Box
         width={"100%"}
         height={"100%"}
@@ -48,13 +57,6 @@ const CustomGroup = ({ id, data, selected }) => {
           }}
         />
       </Box>
-      <NodeResizer
-        color="#3367D9"
-        isVisible={selected}
-        minWidth={100}
-        minHeight={30}
-        lineStyle={{ borderWidth: 1 }}
-      />
     </>
   );
 };

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Stack } from "@mui/material";
 import { FlowContextProvider } from "./flowContext";
-import LeftMenu from "./LateralMenu/LeftMenu";
+import LeftMenu from "./menu/LeftMenu";
 import Flow from "./Flow";
 import { useAppContextApi } from "../../hooks/contextHooks";
 

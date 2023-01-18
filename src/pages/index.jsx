@@ -1,4 +1,4 @@
-// import { useEffect } from "react";
+import WorkStation from "../components/WorkStation";
 
 function Home() {
   // const effectRef = useRef(false);
@@ -18,7 +18,7 @@ function Home() {
         // padding: 20,
       }}
     >
-      <p>WELCOME TO THE APP</p>
+      <WorkStation />
     </div>
   );
 }

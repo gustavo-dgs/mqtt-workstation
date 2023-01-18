@@ -50,7 +50,7 @@ const FlowContextProvider = ({ children }) => {
 
       return newNodes;
     });
-  }, [brokerDevices]);
+  }, [brokerDevices, setNodes]);
 
   useEffect(() => {
     if (workstation?.nodes && workstation?.edges) {
@@ -70,29 +70,32 @@ const FlowContextProvider = ({ children }) => {
     }
   }, [edges, workstation, updateEdges]);
 
-  const addNewNode = (
-    position = { x: 0, y: 0 },
-    type = defaultNode.name,
-    data
-  ) => {
-    const nodeId = randomId();
+  const addNewNode = useCallback(
+    (position = { x: 0, y: 0 }, type = defaultNode.name, data, style) => {
+      const nodeId = randomId();
 
-    setNodes((prevNodes) => {
-      const newNode = {
-        id: nodeId,
-        type,
-        data: {
-          ...data,
-          level: 0,
-        },
-        position,
-      };
+      setNodes((prevNodes) => {
+        const newNode = {
+          id: nodeId,
+          type,
+          data: {
+            ...data,
+            level: 0,
+          },
+          position,
+        };
 
-      return [...prevNodes, newNode];
-    });
+        if (style) {
+          newNode.style = style;
+        }
 
-    return nodeId;
-  };
+        return [...prevNodes, newNode];
+      });
+
+      return nodeId;
+    },
+    [setNodes]
+  );
 
   const addDeviceNode = useCallback(
     (position = { x: 0, y: 0 }, device) => {
@@ -112,13 +115,18 @@ const FlowContextProvider = ({ children }) => {
 
       updateDevice(device);
     },
-    [workstation, user]
+    [addNewNode, workstation, user, updateDevice]
   );
 
   const addNewGroup = (position = { x: 0, y: 0 }) => {
-    addNewNode(position, nodeCollection.CustomGroup.name, {
-      label: "Group",
-    });
+    addNewNode(
+      position,
+      nodeCollection.CustomGroup.name,
+      {
+        label: "Group",
+      },
+      { height: 300, width: 300 }
+    );
   };
 
   const removeNodeFromGroup = (nodeId) => {
@@ -182,7 +190,7 @@ const FlowContextProvider = ({ children }) => {
         }
       });
     },
-    [nodes, updateDevice]
+    [getDevicesFromEdges, updateDevice]
   );
 
   const removeSubscription = (edges) => {

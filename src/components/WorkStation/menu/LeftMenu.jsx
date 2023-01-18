@@ -13,9 +13,9 @@ import {
   useAppContextState,
   useAppContextUser,
 } from "../../../hooks/contextHooks";
-import { useFlowContextApi } from "./../flowContext";
+import { useFlowContextApi } from "../flowContext";
 import DeviceNode from "../nodeCollection/DeviceNode";
-import DraggableBox from "../../../components/DraggableBox";
+import DraggableBox from "../../../components/_shared/DraggableBox";
 import icons from "../../../constants/icons";
 import { nodeCollection } from "../nodeCollection";
 
