@@ -28,6 +28,7 @@ const Flow = () => {
     addDeviceNode,
     addSubscription,
     removeSubscription,
+    removeNode,
   } = useFlowContextApi();
   const { workstation } = useAppContextUser();
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
@@ -273,6 +274,7 @@ const Flow = () => {
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
+        onNodesDelete={removeNode}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onEdgeUpdate={onEdgeUpdate}

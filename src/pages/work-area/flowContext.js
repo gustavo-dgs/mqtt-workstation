@@ -24,7 +24,7 @@ const FlowContextProvider = ({ children }) => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const { updateDevice } = useAppContextApi();
+  const { updateDevice, updateEdges, updateNodes } = useAppContextApi();
   const { user, workstation } = useAppContextUser();
   const { brokerDevices } = useAppContextState();
 
@@ -51,6 +51,24 @@ const FlowContextProvider = ({ children }) => {
       return newNodes;
     });
   }, [brokerDevices]);
+
+  useEffect(() => {
+    if (workstation?.nodes && workstation?.edges) {
+      setNodes(workstation.nodes);
+      setEdges(workstation.edges);
+    }
+  }, [workstation]);
+
+  useEffect(() => {
+    if (workstation) updateNodes(nodes);
+  }, [nodes, workstation]);
+
+  useEffect(() => {
+    if (workstation) {
+      console.log("useEffect", edges);
+      updateEdges(edges);
+    }
+  }, [edges, workstation]);
 
   const addNewNode = (
     position = { x: 0, y: 0 },
@@ -183,6 +201,21 @@ const FlowContextProvider = ({ children }) => {
     });
   };
 
+  const removeNode = (nodes) => {
+    if (!Array.isArray(nodes)) {
+      nodes = [nodes];
+    }
+
+    nodes.forEach((node) => {
+      if (node.type === nodeCollection.DeviceNode.name) {
+        const { device } = node.data;
+        device.nodeId = null;
+        device.subscriptions = [];
+        updateDevice(device);
+      }
+    });
+  };
+
   const stateValue = { nodes, edges, onNodesChange, onEdgesChange };
 
   const apiValue = {
@@ -194,6 +227,7 @@ const FlowContextProvider = ({ children }) => {
     addDeviceNode,
     addSubscription,
     removeSubscription,
+    removeNode,
   };
 
   return (

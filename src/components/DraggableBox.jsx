@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 
-const DraggableBox = ({ children, onDragStart, ...props }) => {
+const DraggableBox = ({ children, onDragStart, draggable, ...props }) => {
   return (
     <Box
       {...props}
@@ -13,7 +13,7 @@ const DraggableBox = ({ children, onDragStart, ...props }) => {
           cursor: "grabbing",
         },
       }}
-      draggable
+      draggable={draggable}
     >
       {children}
     </Box>

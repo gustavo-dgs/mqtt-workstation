@@ -41,6 +41,7 @@ const AccordeonStep = ({
   expanded,
   handleChange,
   onDragStart,
+  draggable,
 }) => {
   return (
     <Accordion expanded={expanded === name} onChange={handleChange(name)}>
@@ -67,6 +68,7 @@ const AccordeonStep = ({
                 width={"100%"}
                 key={item.mqttId}
                 onDragStart={(e) => onDragStart(e, type, data)}
+                draggable={draggable}
               >
                 <DeviceNode key={item.mqttId} data={data} disabled />
               </DraggableBox>
@@ -102,11 +104,13 @@ const LateralMenu = ({ newBrokerDevices, oldBrokerDevices }) => {
         title: "New Connections",
         name: "panel1",
         data: newBrokerDevices,
+        draggable: true,
       },
       {
         title: "Workstation Devices",
         name: "panel2",
         data: oldBrokerDevices,
+        draggable: false,
       },
     ],
     [newBrokerDevices, oldBrokerDevices]
@@ -144,6 +148,7 @@ const LateralMenu = ({ newBrokerDevices, oldBrokerDevices }) => {
               name={accordeon.name}
               data={accordeon.data}
               title={accordeon.title}
+              draggable={accordeon.draggable}
               expanded={expanded}
               handleChange={handleChange}
               onDragStart={onDragStart}

@@ -17,24 +17,29 @@ const AppContextProvider = ({ children }) => {
   const [brokerDevices, setBrokerDevices] = useState(new Map());
   const [newBrokerDevices, setNewBrokerDevices] = useState([]);
   const [oldBrokerDevices, setOldBrokerDevices] = useState([]);
+  const [initialLoad, setInitialLoad] = useState(false);
   const [unsubscribeFromBrokerDevices, setUnsubscribeFromBrokerDevices] =
     useState(() => {});
 
   //Load User
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  //Load user data
   useEffect(() => {
     const getData = async () => {
       const ws = await Workstation.get(
         "gutierrez-house",
         "Gustavo's Workspace"
       );
-      if (!(ws instanceof Error)) setWorkstation(ws);
-    };
-    getData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  //Load user data
-  useEffect(() => {
+      if (!(ws instanceof Error)) {
+        setWorkstation(ws);
+      }
+    };
+
+    getData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -43,7 +48,6 @@ const AppContextProvider = ({ children }) => {
     const newDevices =
       brokerDevicesArr.filter((device) => !device.nodeId) || [];
     setNewBrokerDevices(newDevices);
-    console.log(brokerDevices);
   }, [brokerDevices]);
 
   useEffect(() => {
@@ -51,6 +55,20 @@ const AppContextProvider = ({ children }) => {
     const oldDevices = brokerDevicesArr.filter((device) => device.nodeId) || [];
     setOldBrokerDevices(oldDevices);
   }, [brokerDevices]);
+
+  const updateEdges = async (edges) => {
+    if (workstation) {
+      const newWorkstation = { ...workstation, edges };
+      await Workstation.update(newWorkstation);
+    }
+  };
+
+  const updateNodes = async (nodes) => {
+    if (workstation) {
+      const newWorkstation = { ...workstation, nodes };
+      await Workstation.update(newWorkstation);
+    }
+  };
 
   //brokerDevices Api
   const addDevice = (device) => {
@@ -157,11 +175,14 @@ const AppContextProvider = ({ children }) => {
     getDevices,
     getDevicesFromDb,
     unsubscribeFromBrokerDevices,
+    updateEdges,
+    updateNodes,
   };
 
   const userValue = {
     user,
     workstation,
+    initialLoad,
   };
 
   return (
