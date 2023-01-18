@@ -7,8 +7,10 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
+  IconButton,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import {
   useAppContextState,
   useAppContextUser,
@@ -43,6 +45,8 @@ const AccordeonStep = ({
   onDragStart,
   draggable,
 }) => {
+  const { removeDeviceFromWorkstation } = useFlowContextApi();
+
   return (
     <Accordion expanded={expanded === name} onChange={handleChange(name)}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -69,8 +73,13 @@ const AccordeonStep = ({
                 key={item.mqttId}
                 onDragStart={(e) => onDragStart(e, type, data)}
                 draggable={draggable}
+                display={"flex"}
+                flexDirection={"row"}
               >
                 <DeviceNode key={item.mqttId} data={data} disabled />
+                <IconButton onClick={() => removeDeviceFromWorkstation(item)}>
+                  <DeleteOutlinedIcon />
+                </IconButton>
               </DraggableBox>
             );
           })}

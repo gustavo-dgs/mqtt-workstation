@@ -24,7 +24,8 @@ const FlowContextProvider = ({ children }) => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const { updateDevice, updateEdges, updateNodes } = useAppContextApi();
+  const { updateDevice, updateEdges, updateNodes, removeDevice } =
+    useAppContextApi();
   const { user, workstation } = useAppContextUser();
   const { brokerDevices } = useAppContextState();
 
@@ -224,6 +225,23 @@ const FlowContextProvider = ({ children }) => {
     });
   };
 
+  const removeDeviceFromWorkstation = (device) => {
+    removeDevice(device);
+
+    if (device.nodeId) {
+      setNodes((prevNodes) => {
+        return prevNodes.filter((node) => node.id !== device.nodeId);
+      });
+
+      setEdges((prevEdges) => {
+        return prevEdges.filter(
+          (edge) =>
+            edge.source !== device.nodeId && edge.target !== device.nodeId
+        );
+      });
+    }
+  };
+
   const stateValue = { nodes, edges, onNodesChange, onEdgesChange };
 
   const apiValue = {
@@ -236,6 +254,7 @@ const FlowContextProvider = ({ children }) => {
     addSubscription,
     removeSubscription,
     removeNode,
+    removeDeviceFromWorkstation,
   };
 
   return (
