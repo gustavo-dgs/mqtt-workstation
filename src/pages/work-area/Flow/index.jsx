@@ -58,7 +58,6 @@ const Flow = () => {
   const onEdgeUpdate = useCallback(
     (oldEdge, newConnection) => {
       setEdges((els) => updateEdge(oldEdge, newConnection, els));
-      console.log("onEdgeUpdate", newConnection);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -108,7 +107,13 @@ const Flow = () => {
       }
     },
 
-    [reactFlowInstance, reactFlowWrapper, workstation]
+    [
+      reactFlowInstance,
+      reactFlowWrapper,
+      workstation,
+      addDeviceNode,
+      addNewNode,
+    ]
   );
 
   //save the current node when it starts to be dragged
@@ -160,7 +165,7 @@ const Flow = () => {
     //Remove hover effect from all groups
     setNodes((prevNodes) =>
       prevNodes.map((node) => {
-        if (node.type === "customGroup") {
+        if (node.type === "CustomGroup") {
           node.style = { ...node.style, boxShadow: "none" };
         }
         return node;

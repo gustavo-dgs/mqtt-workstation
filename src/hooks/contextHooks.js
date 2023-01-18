@@ -177,6 +177,7 @@ const AppContextProvider = ({ children }) => {
     unsubscribeFromBrokerDevices,
     updateEdges,
     updateNodes,
+    setInitialLoad,
   };
 
   const userValue = {

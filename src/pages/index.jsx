@@ -1,10 +1,10 @@
-import { useEffect, useRef } from "react";
+// import { useEffect } from "react";
 
 function Home() {
-  const effectRef = useRef(false);
-  useEffect(() => {
-    
-  },[]);
+  // const effectRef = useRef(false);
+  // useEffect(() => {
+
+  // },[]);
 
   return (
     <div

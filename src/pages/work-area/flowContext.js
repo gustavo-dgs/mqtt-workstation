@@ -57,18 +57,18 @@ const FlowContextProvider = ({ children }) => {
       setNodes(workstation.nodes);
       setEdges(workstation.edges);
     }
-  }, [workstation]);
+  }, [workstation, setNodes, setEdges]);
 
   useEffect(() => {
     if (workstation) updateNodes(nodes);
-  }, [nodes, workstation]);
+  }, [nodes, workstation, updateNodes]);
 
   useEffect(() => {
     if (workstation) {
       console.log("useEffect", edges);
       updateEdges(edges);
     }
-  }, [edges, workstation]);
+  }, [edges, workstation, updateEdges]);
 
   const addNewNode = (
     position = { x: 0, y: 0 },

@@ -8,7 +8,7 @@ import {
   AccordionDetails,
   Typography,
 } from "@mui/material";
-import { ExpandMore } from "@mui/icons-material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   useAppContextState,
   useAppContextUser,
@@ -45,7 +45,7 @@ const AccordeonStep = ({
 }) => {
   return (
     <Accordion expanded={expanded === name} onChange={handleChange(name)}>
-      <AccordionSummary expandIcon={<ExpandMore />}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography fontWeight={400} variant="h7">
           {title}
         </Typography>

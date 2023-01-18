@@ -70,7 +70,7 @@ const isInsideAGroup = (nodeA, nodeB, nodesArr) => {
     centerX < absolutePositionB.x + nodeB.width &&
     centerY > absolutePositionB.y &&
     centerY < absolutePositionB.y + nodeB.height &&
-    nodeB.type === "customGroup" &&
+    nodeB.type === "CustomGroup" &&
     nodeB.id !== nodeA.id; // this is needed, otherwise we would always find the dragged node
 
   //If A is inside a B
@@ -97,7 +97,7 @@ const hasChildren = (node, nodesArr) => {
 
 const updateChildrensLevel = (parentNode, nodesArr, copyArr) => {
   // console.log("updateChildrensLevel", parentNode.id);
-  if (parentNode.type !== "customGroup") {
+  if (parentNode.type !== "CustomGroup") {
     return;
   }
 
