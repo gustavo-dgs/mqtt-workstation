@@ -10,7 +10,7 @@ const getFieldComponent = (type, label, required, value, onTextFieldChange) => {
       return (
         <TextField
           key={label}
-          label={label}
+          label={label || ""}
           required={required}
           variant="outlined"
           value={value}
