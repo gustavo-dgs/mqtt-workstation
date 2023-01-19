@@ -162,18 +162,20 @@ const FlowContextProvider = ({ children }) => {
         MqttConstants.VIRTUAL_DEVICE
       );
 
+      const json = { ...newDevice };
+
       addNewNode(
         position,
         nodeCollection.ActionNode.name,
         {
-          device: newDevice,
+          device: json,
         },
         null,
         nodeId
       );
 
-      addVirtualDevice(newDevice, (firebaseId) => {
-        newDevice.firebaseId = firebaseId;
+      addVirtualDevice(json, (firebaseId) => {
+        json.firebaseId = firebaseId;
 
         setNodes((prevNodes) => {
           const newNodes = prevNodes.map((node) => {
@@ -182,7 +184,7 @@ const FlowContextProvider = ({ children }) => {
                 ...node,
                 data: {
                   ...node.data,
-                  device: newDevice,
+                  device: json,
                 },
               };
             }

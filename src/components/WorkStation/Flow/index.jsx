@@ -109,7 +109,7 @@ const Flow = () => {
           break;
 
         case nodeCollection.ActionNode.name:
-          addActionNode(position, json.type, json.data);
+          addActionNode(position);
           break;
       }
     },

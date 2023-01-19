@@ -66,7 +66,6 @@ const AppContextProvider = ({ children }) => {
   const updateNodes = async (nodes) => {
     if (workstation) {
       const newWorkstation = { ...workstation, nodes };
-      console.log("updateNodes", newWorkstation);
       await Workstation.update(newWorkstation);
     }
   };
@@ -98,7 +97,6 @@ const AppContextProvider = ({ children }) => {
       return newState;
     });
 
-    console.log("AppContextProvider updateDevice");
     Device.update(device);
   };
 

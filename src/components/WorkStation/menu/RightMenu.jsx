@@ -48,7 +48,6 @@ const RightMenu = ({ width }) => {
   useEffect(() => {
     if (!nodes) return;
     const selectedNode = nodes.find((node) => node.selected);
-    console.log("selectedNode", selectedNode);
     setSelectedNode(selectedNode);
   }, [nodes]);
 
