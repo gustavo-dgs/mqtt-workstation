@@ -1,22 +1,50 @@
-import React, { useMemo } from "react";
+import React, { useEffect } from "react";
 import NodeTemplate from "./NodeTemplate";
 import { Handle, Position } from "reactflow";
 import { amber } from "@mui/material/colors";
 import icons from "../../../constants/icons";
 import { Stack, IconButton } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
-import MqttClient from "../../../services/mqtt-client";
+import mqtt from "mqtt";
+
+class MqttClient {
+  static client = null;
+}
 
 const ActionNode = ({ id, data, disabled, width }) => {
   let { color, icon, label, device, payload } = data;
   color = color || amber;
   icon = icon || icons.NEW_WSCLIENT_ICON;
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const mqttClient = useMemo(() => (disabled ? null : new MqttClient()), []);
+  const firtsLoad = React.useRef(true);
+
+  useEffect(() => {
+    if (firtsLoad.current) {
+      firtsLoad.current = false;
+
+      const options = {
+        port: 1884,
+        host: "localhost",
+        clean: true,
+      };
+
+      const client = mqtt.connect(options);
+      client.on("connect", () => console.log("Device connected"));
+      // client.publish("test", "test");
+
+      MqttClient.client = client;
+    }
+  }, []);
 
   const onClick = () => {
-    mqttClient.publish(device.channel, payload);
+    const options = [
+      {
+        qos: 0,
+        retain: false,
+      },
+    ];
+
+    MqttClient.client.publish(device.channel, payload, options);
   };
 
   if (disabled) {

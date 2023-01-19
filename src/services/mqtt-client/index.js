@@ -2,14 +2,13 @@ import mqtt from "mqtt";
 
 const options = {
   port: 1884,
-  protocol: "mqtt",
-  protocolVersion: 3.1,
   host: "localhost",
   clean: true,
 };
 
 class MqttClient {
   constructor() {
+    console.log("Creating new MQTT CONSTRUCTOR");
     this.client = mqtt.connect(options);
     this.client.on("connect", () => console.log("Device connected"));
   }
