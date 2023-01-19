@@ -1,15 +1,17 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import NodeTemplate from "./NodeTemplate";
 import { Handle, Position } from "reactflow";
 import { Box, Badge } from "@mui/material";
 import { cyan } from "@mui/material/colors";
 import icons from "../../../constants/icons";
 import { useAppContextState } from "../../../hooks/contextHooks";
+import { useFlowContextApi } from "../flowContext";
 import { CARD_NODE_WIDTH } from "../nodeCollection";
 
 const DeviceNode = ({ data, disabled, width }) => {
   const { brokerDevices } = useAppContextState();
-  let { device, color, icon } = data;
+  const { setNodes } = useFlowContextApi();
+  let { device, color, icon, label } = data;
   color = color || cyan;
   icon = icon || icons.NEW_DEVICE_ICON;
 
@@ -17,6 +19,18 @@ const DeviceNode = ({ data, disabled, width }) => {
     const newDevice = brokerDevices.get(device.mqttId);
     return newDevice?.isOnline;
   }, [brokerDevices, device.mqttId]);
+
+  useEffect(() => {
+    setNodes((prevNodes) => {
+      const newNodes = prevNodes.map((node) => {
+        if (node.id === device.id) {
+          return { ...node, data: { ...node.data, label } };
+        }
+        return node;
+      });
+      return newNodes;
+    });
+  }, [device.id, label, setNodes]);
 
   return (
     <>
@@ -36,7 +50,7 @@ const DeviceNode = ({ data, disabled, width }) => {
           sx={{ width: "100%" }}
         >
           <NodeTemplate
-            label={device.label || device.mqttId}
+            label={label || device.label || device.mqttId}
             icon={icon}
             color={color}
             width={"100%"}

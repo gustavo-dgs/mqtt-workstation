@@ -38,12 +38,12 @@ const nodeCollection = {
   ActionNode: {
     name: "ActionNode",
     component: ActionNode,
-    setData: (label, icon, color, topic, payload) => ({
+    setData: (label, icon, color, payload, device) => ({
       label,
       icon,
       color,
-      topic,
       payload,
+      device,
     }),
     model: [
       ...commonModel,

@@ -66,6 +66,7 @@ const AppContextProvider = ({ children }) => {
   const updateNodes = async (nodes) => {
     if (workstation) {
       const newWorkstation = { ...workstation, nodes };
+      console.log("updateNodes", newWorkstation);
       await Workstation.update(newWorkstation);
     }
   };
@@ -79,6 +80,11 @@ const AppContextProvider = ({ children }) => {
     });
 
     Device.add(device);
+  };
+
+  const addVirtualDevice = async (device, callback) => {
+    const firebaseId = await Device.add(device);
+    callback(firebaseId);
   };
 
   const removeDevice = (device) => {
@@ -142,7 +148,7 @@ const AppContextProvider = ({ children }) => {
   };
 
   const getDevicesFromDb = async () => {
-    const unsubscribe = await Device.getAll(
+    const unsubscribe = await Device.getRealDevices(
       user,
       onDeviceAdd,
       onDeviceUpdate,
@@ -172,6 +178,7 @@ const AppContextProvider = ({ children }) => {
     updateEdges,
     updateNodes,
     setInitialLoad,
+    addVirtualDevice,
   };
 
   const userValue = {

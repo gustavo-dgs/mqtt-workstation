@@ -20,10 +20,21 @@ const getFieldComponent = (type, label, required, value, onTextFieldChange) => {
         />
       );
 
-    // case "json":
-    //   return (
-
-    //   );
+    case "json":
+      return (
+        <TextField
+          key={label}
+          label={label || ""}
+          required={required}
+          variant="outlined"
+          value={value}
+          onChange={(e) => onTextFieldChange(e, label)}
+          size={"small"}
+          fullWidth
+          multiline
+          maxRows={4}
+        />
+      );
     default:
       return null;
   }

@@ -12,6 +12,8 @@ import {
   useAppContextUser,
   useAppContextState,
 } from "../../hooks/contextHooks";
+import Device from "../../services/mqtt-firebase/models/Device";
+import MqttConstants from "../../services/mqtt-firebase/MqttConstants";
 
 const FlowContextState = createContext();
 const FlowContextApi = createContext();
@@ -24,8 +26,13 @@ const FlowContextProvider = ({ children }) => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const { updateDevice, updateEdges, updateNodes, removeDevice } =
-    useAppContextApi();
+  const {
+    updateDevice,
+    updateEdges,
+    updateNodes,
+    removeDevice,
+    addVirtualDevice,
+  } = useAppContextApi();
   const { user, workstation } = useAppContextUser();
   const { brokerDevices } = useAppContextState();
 
@@ -74,8 +81,8 @@ const FlowContextProvider = ({ children }) => {
   }, [edges, workstation, updateEdges]);
 
   const addNewNode = useCallback(
-    (position = { x: 0, y: 0 }, type = defaultNode.name, data, style) => {
-      const nodeId = randomId();
+    (position = { x: 0, y: 0 }, type = defaultNode.name, data, style, id) => {
+      const nodeId = id || randomId();
 
       setNodes((prevNodes) => {
         const newNode = {
@@ -131,6 +138,64 @@ const FlowContextProvider = ({ children }) => {
       { height: 300, width: 300 }
     );
   };
+
+  const addActionNode = useCallback(
+    (position) => {
+      const nodeId = randomId();
+      const mqttId = "ActionNode-" + nodeId;
+      const channel = `${user}/${workstation.firebaseId}/${mqttId}`;
+
+      const newDevice = new Device(
+        null,
+        mqttId,
+        "::1",
+        user,
+        workstation.firebaseId,
+        [],
+        channel,
+        null,
+        null,
+        false,
+        null,
+        null,
+        nodeId,
+        MqttConstants.VIRTUAL_DEVICE
+      );
+
+      addNewNode(
+        position,
+        nodeCollection.ActionNode.name,
+        {
+          device: newDevice,
+        },
+        null,
+        nodeId
+      );
+
+      addVirtualDevice(newDevice, (firebaseId) => {
+        newDevice.firebaseId = firebaseId;
+
+        setNodes((prevNodes) => {
+          const newNodes = prevNodes.map((node) => {
+            if (node.id === nodeId) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  device: newDevice,
+                },
+              };
+            }
+
+            return node;
+          });
+
+          return newNodes;
+        });
+      });
+    },
+    [addNewNode, addVirtualDevice, user, workstation, setNodes]
+  );
 
   const removeNodeFromGroup = (nodeId) => {
     setNodes((prevNodes) => {
@@ -261,6 +326,7 @@ const FlowContextProvider = ({ children }) => {
     removeSubscription,
     removeNode,
     removeDeviceFromWorkstation,
+    addActionNode,
   };
 
   return (

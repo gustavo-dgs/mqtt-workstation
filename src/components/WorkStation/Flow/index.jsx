@@ -23,12 +23,12 @@ const Flow = () => {
   const {
     setEdges,
     setNodes,
-    addNewNode,
     addDeviceNode,
     addSubscription,
     removeSubscription,
     removeNode,
     addNewGroup,
+    addActionNode,
   } = useFlowContextApi();
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   // target is the node that the node is dragged over
@@ -109,12 +109,12 @@ const Flow = () => {
           break;
 
         case nodeCollection.ActionNode.name:
-          addNewNode(position, json.type, json.data);
+          addActionNode(position, json.type, json.data);
           break;
       }
     },
 
-    [reactFlowInstance, addDeviceNode, addNewGroup, addNewNode]
+    [reactFlowInstance, addDeviceNode, addNewGroup, addActionNode]
   );
 
   //save the current node when it starts to be dragged
