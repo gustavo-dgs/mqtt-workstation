@@ -7,10 +7,10 @@ const DraggableBox = ({ children, onDragStart, draggable, ...props }) => {
       onDragStart={onDragStart}
       sx={{
         "&:hover": {
-          cursor: "grab",
+          cursor: draggable ? "grab" : "default",
         },
         "&:active": {
-          cursor: "grabbing",
+          cursor: draggable ? "grabbing" : "default",
         },
       }}
       draggable={draggable}

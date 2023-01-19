@@ -5,6 +5,7 @@ import { Box, Badge } from "@mui/material";
 import { cyan } from "@mui/material/colors";
 import icons from "../../../constants/icons";
 import { useAppContextState } from "../../../hooks/contextHooks";
+import { CARD_NODE_WIDTH } from "../nodeCollection";
 
 const DeviceNode = ({ data, disabled, width }) => {
   const { brokerDevices } = useAppContextState();
@@ -20,7 +21,7 @@ const DeviceNode = ({ data, disabled, width }) => {
   return (
     <>
       <Box
-        width={"100%"}
+        width={width || CARD_NODE_WIDTH}
         display={"flex"}
         flexDirection={"row"}
         justifyContent={"center"}
@@ -34,38 +35,36 @@ const DeviceNode = ({ data, disabled, width }) => {
           }}
           sx={{ width: "100%" }}
         >
-          <Box>
-            <NodeTemplate
-              label={device.label || device.mqttId}
-              icon={icon}
-              color={color}
-              width={width}
-            />
-            {!disabled && (
-              <>
-                <Handle
-                  id={"source"}
-                  type={"source"}
-                  position={Position.Right}
-                  style={{
-                    backgroundColor: "red",
-                    width: 10,
-                    height: 10,
-                  }}
-                />
-                <Handle
-                  id={"target"}
-                  type={"target"}
-                  position={Position.Left}
-                  style={{
-                    backgroundColor: "cyan",
-                    width: 10,
-                    height: 10,
-                  }}
-                />
-              </>
-            )}
-          </Box>
+          <NodeTemplate
+            label={device.label || device.mqttId}
+            icon={icon}
+            color={color}
+            width={"100%"}
+          />
+          {!disabled && (
+            <>
+              <Handle
+                id={"source"}
+                type={"source"}
+                position={Position.Right}
+                style={{
+                  backgroundColor: "red",
+                  width: 10,
+                  height: 10,
+                }}
+              />
+              <Handle
+                id={"target"}
+                type={"target"}
+                position={Position.Left}
+                style={{
+                  backgroundColor: "cyan",
+                  width: 10,
+                  height: 10,
+                }}
+              />
+            </>
+          )}
         </Badge>
       </Box>
     </>

@@ -28,6 +28,7 @@ const Flow = () => {
     addSubscription,
     removeSubscription,
     removeNode,
+    addNewGroup,
   } = useFlowContextApi();
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   // target is the node that the node is dragged over
@@ -103,13 +104,17 @@ const Flow = () => {
           addDeviceNode(position, json.data.device);
           break;
 
-        default:
+        case nodeCollection.CustomGroup.name:
+          addNewGroup(position, json.type, json.data);
+          break;
+
+        case nodeCollection.ActionNode.name:
           addNewNode(position, json.type, json.data);
           break;
       }
     },
 
-    [reactFlowInstance, reactFlowWrapper, addDeviceNode, addNewNode]
+    [reactFlowInstance, addDeviceNode, addNewGroup, addNewNode]
   );
 
   //save the current node when it starts to be dragged
@@ -268,6 +273,7 @@ const Flow = () => {
       style={{
         width: "100%",
         height: "100%",
+        flexGrow: 1,
       }}
       ref={reactFlowWrapper}
     >

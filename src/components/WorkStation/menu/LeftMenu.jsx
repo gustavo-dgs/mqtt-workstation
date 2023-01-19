@@ -1,8 +1,7 @@
-import React, { memo, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Stack,
-  Button,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -20,21 +19,12 @@ import DeviceNode from "../nodeCollection/DeviceNode";
 import DraggableBox from "../../../components/_shared/DraggableBox";
 import icons from "../../../constants/icons";
 import { nodeCollection } from "../nodeCollection";
+import { grey } from "@mui/material/colors";
 
-const ComponentWithNewBorkerDevices = (Component) => {
-  const MemoComponent = memo(Component);
-
-  return function WithNewBorkerDevices() {
-    const { newBrokerDevices, oldBrokerDevices } = useAppContextState();
-
-    return (
-      <MemoComponent
-        newBrokerDevices={newBrokerDevices}
-        oldBrokerDevices={oldBrokerDevices}
-      />
-    );
-  };
-};
+const toolNodes = [
+  nodeCollection.CustomGroup.name,
+  nodeCollection.ActionNode.name,
+];
 
 const AccordeonStep = ({
   title,
@@ -42,11 +32,8 @@ const AccordeonStep = ({
   data,
   expanded,
   handleChange,
-  onDragStart,
-  draggable,
+  renderItems,
 }) => {
-  const { removeDeviceFromWorkstation } = useFlowContextApi();
-
   return (
     <Accordion expanded={expanded === name} onChange={handleChange(name)}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -54,45 +41,25 @@ const AccordeonStep = ({
           {title}
         </Typography>
       </AccordionSummary>
-      <AccordionDetails>
+      <AccordionDetails sx={{ padding: "10px" }}>
         <Stack
           direction="column"
           flexWrap="wrap"
           justifyContent={"center"}
           spacing={1}
         >
-          {data.map((item) => {
-            const data = nodeCollection.DeviceNode.setData(
-              item,
-              icons.NEW_DEVICE_ICON
-            );
-            const type = nodeCollection.DeviceNode.name;
-            return (
-              <DraggableBox
-                width={"100%"}
-                key={item.mqttId}
-                onDragStart={(e) => onDragStart(e, type, data)}
-                draggable={draggable}
-                display={"flex"}
-                flexDirection={"row"}
-              >
-                <DeviceNode key={item.mqttId} data={data} disabled />
-                <IconButton onClick={() => removeDeviceFromWorkstation(item)}>
-                  <DeleteOutlinedIcon />
-                </IconButton>
-              </DraggableBox>
-            );
-          })}
+          {data.map(renderItems)}
         </Stack>
       </AccordionDetails>
     </Accordion>
   );
 };
 
-const LateralMenu = ({ newBrokerDevices, oldBrokerDevices }) => {
+const LateralMenu = ({ width }) => {
   // console.log("LateralMenu");
   const [expanded, setExpanded] = useState(false);
-  const { addNewGroup } = useFlowContextApi();
+  const { newBrokerDevices, oldBrokerDevices } = useAppContextState();
+  const { removeDeviceFromWorkstation } = useFlowContextApi();
   const { workstation } = useAppContextUser();
 
   const handleChange = (panel) => (event, isExpanded) => {
@@ -113,24 +80,89 @@ const LateralMenu = ({ newBrokerDevices, oldBrokerDevices }) => {
         title: "New Connections",
         name: "panel1",
         data: newBrokerDevices,
-        draggable: true,
+        renderItems: (item) => {
+          const data = nodeCollection.DeviceNode.setData(
+            item,
+            icons.NEW_DEVICE_ICON
+          );
+          const type = nodeCollection.DeviceNode.name;
+          return (
+            <DraggableBox
+              width={"100%"}
+              key={item.mqttId}
+              onDragStart={(e) => onDragStart(e, type, data)}
+              draggable={true}
+              display={"flex"}
+              flexDirection={"row"}
+            >
+              <DeviceNode data={data} width={"100%"} disabled />
+              <IconButton onClick={() => removeDeviceFromWorkstation(item)}>
+                <DeleteOutlinedIcon />
+              </IconButton>
+            </DraggableBox>
+          );
+        },
+      },
+      {
+        title: "Tools",
+        name: "panel3",
+        data: toolNodes,
+        renderItems: (item) => {
+          const data = nodeCollection[item].setData(nodeCollection[item].name);
+          const type = nodeCollection[item].name;
+          const Component = nodeCollection[item].component;
+          return (
+            <DraggableBox
+              width={"100%"}
+              key={item}
+              onDragStart={(e) => onDragStart(e, type, data)}
+              draggable={true}
+            >
+              <Component data={data} width={"100%"} disabled />
+            </DraggableBox>
+          );
+        },
       },
       {
         title: "Workstation Devices",
         name: "panel2",
         data: oldBrokerDevices,
-        draggable: false,
+        renderItems: (item) => {
+          const data = nodeCollection.DeviceNode.setData(
+            item,
+            icons.NEW_DEVICE_ICON
+          );
+          const type = nodeCollection.DeviceNode.name;
+          return (
+            <DraggableBox
+              width={"100%"}
+              key={item.mqttId}
+              onDragStart={(e) => onDragStart(e, type, data)}
+              draggable={false}
+              display={"flex"}
+              flexDirection={"row"}
+            >
+              <DeviceNode data={data} width={"100%"} disabled />
+              <IconButton onClick={() => removeDeviceFromWorkstation(item)}>
+                <DeleteOutlinedIcon />
+              </IconButton>
+            </DraggableBox>
+          );
+        },
       },
     ],
-    [newBrokerDevices, oldBrokerDevices]
+    [newBrokerDevices, oldBrokerDevices, removeDeviceFromWorkstation]
   );
 
   return (
     <Box
       sx={{
-        width: 380,
+        width: width,
+        flexShrink: 0,
+        flexGrow: 0,
+        flexBasis: width,
         height: "100%",
-        backgroundColor: "white",
+        backgroundColor: grey[100],
       }}
       // padding={1}
       overflow={"scroll"}
@@ -140,27 +172,15 @@ const LateralMenu = ({ newBrokerDevices, oldBrokerDevices }) => {
           <Typography fontWeight={400} variant="h5">
             {workstation ? workstation.name : "Workstation"}
           </Typography>
-
-          <Button
-            onClick={() => addNewGroup({ x: 0, y: 0 })}
-            variant="outlined"
-            sx={{ alignSelf: "center", justifySelf: "center" }}
-          >
-            Add Group
-          </Button>
         </Stack>
 
         <Stack>
           {accordeons.map((accordeon) => (
             <AccordeonStep
               key={accordeon.name}
-              name={accordeon.name}
-              data={accordeon.data}
-              title={accordeon.title}
-              draggable={accordeon.draggable}
+              {...accordeon}
               expanded={expanded}
               handleChange={handleChange}
-              onDragStart={onDragStart}
             />
           ))}
         </Stack>
@@ -169,4 +189,4 @@ const LateralMenu = ({ newBrokerDevices, oldBrokerDevices }) => {
   );
 };
 
-export default ComponentWithNewBorkerDevices(LateralMenu);
+export default LateralMenu;

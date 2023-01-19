@@ -2,8 +2,11 @@ import { useEffect, useRef } from "react";
 import { Stack } from "@mui/material";
 import { FlowContextProvider } from "./flowContext";
 import LeftMenu from "./menu/LeftMenu";
+import RightMenu from "./menu/RightMenu";
 import Flow from "./Flow";
 import { useAppContextApi } from "../../hooks/contextHooks";
+
+const WIDTH = "270px";
 
 const WorkArea = () => {
   // console.log("WorkArea");
@@ -27,10 +30,12 @@ const WorkArea = () => {
           sx={{
             width: "100%",
             height: "100%",
+            right: 0,
           }}
         >
-          <LeftMenu />
+          <LeftMenu width={WIDTH} />
           <Flow />
+          <RightMenu width={WIDTH} />
         </Stack>
       </FlowContextProvider>
     </>
