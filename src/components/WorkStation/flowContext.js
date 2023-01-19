@@ -29,6 +29,8 @@ const FlowContextProvider = ({ children }) => {
   const { user, workstation } = useAppContextUser();
   const { brokerDevices } = useAppContextState();
 
+  // useEffect(() => console.log("-----NODES-----", nodes), [nodes]);
+
   useEffect(() => {
     const brokerDevicesArr = Array.from(brokerDevices.values());
 
@@ -66,7 +68,7 @@ const FlowContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (workstation) {
-      console.log("useEffect", edges);
+      // console.log("useEffect Edges", edges);
       updateEdges(edges);
     }
   }, [edges, workstation, updateEdges]);
@@ -194,21 +196,25 @@ const FlowContextProvider = ({ children }) => {
     [getDevicesFromEdges, updateDevice]
   );
 
-  const removeSubscription = (edges) => {
-    const subscriptions = getDevicesFromEdges(edges);
+  const removeSubscription = useCallback(
+    (edges) => {
+      const subscriptions = getDevicesFromEdges(edges);
 
-    subscriptions.forEach((subscription) => {
-      const { subscriptorDevice, publisherDevice } = subscription;
+      subscriptions.forEach((subscription) => {
+        const { subscriptorDevice, publisherDevice } = subscription;
 
-      if (!subscriptorDevice.subscriptions) return;
+        if (!subscriptorDevice.subscriptions) return;
 
-      subscriptorDevice.subscriptions = subscriptorDevice.subscriptions.filter(
-        (subs) => subs !== publisherDevice.mqttId
-      );
+        subscriptorDevice.subscriptions =
+          subscriptorDevice.subscriptions.filter(
+            (subs) => subs !== publisherDevice.mqttId
+          );
 
-      updateDevice(subscriptorDevice);
-    });
-  };
+        updateDevice(subscriptorDevice);
+      });
+    },
+    [getDevicesFromEdges, updateDevice]
+  );
 
   const removeNode = (nodes) => {
     if (!Array.isArray(nodes)) {

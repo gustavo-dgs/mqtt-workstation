@@ -1,14 +1,21 @@
-import React from "react";
+import React, { useMemo } from "react";
 import NodeTemplate from "./NodeTemplate";
 import { Handle, Position } from "reactflow";
 import { Box, Badge } from "@mui/material";
 import { cyan } from "@mui/material/colors";
 import icons from "../../../constants/icons";
+import { useAppContextState } from "../../../hooks/contextHooks";
 
 const DeviceNode = ({ data, disabled, width }) => {
+  const { brokerDevices } = useAppContextState();
   let { device, color, icon } = data;
   color = color || cyan;
   icon = icon || icons.NEW_DEVICE_ICON;
+
+  const isOnline = useMemo(() => {
+    const newDevice = brokerDevices.get(device.mqttId);
+    return newDevice?.isOnline;
+  }, [brokerDevices, device.mqttId]);
 
   return (
     <>
@@ -19,7 +26,7 @@ const DeviceNode = ({ data, disabled, width }) => {
         justifyContent={"center"}
       >
         <Badge
-          color={device.isOnline ? "success" : "error"}
+          color={isOnline ? "success" : "error"}
           badgeContent=" "
           anchorOrigin={{
             vertical: "top",

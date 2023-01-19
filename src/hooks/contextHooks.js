@@ -82,12 +82,6 @@ const AppContextProvider = ({ children }) => {
   };
 
   const removeDevice = (device) => {
-    setBrokerDevices((prevState) => {
-      const newState = new Map(prevState);
-      newState.delete(device.mqttId, device);
-      return newState;
-    });
-
     Device.delete(device);
   };
 
